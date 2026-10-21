@@ -1,0 +1,131 @@
+nvcr.io/nvidia/isaac-sim@sha256:0c16dd67d09a70ea474f2c809a13c4d09bd23c738184cf1bf28af487ecd39080: Pulling from nvidia/isaac-sim
+20043066d3d5: Already exists
+23474ccff4ec: Pulling fs layer
+34f5a1bb0f68: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+8848c7be1069: Pulling fs layer
+0ef91180750f: Pulling fs layer
+ec53449e0a78: Pulling fs layer
+44491c0149b5: Pulling fs layer
+3aba77e49c91: Pulling fs layer
+424877746abd: Pulling fs layer
+8848c7be1069: Waiting
+0ef91180750f: Waiting
+ec53449e0a78: Waiting
+44491c0149b5: Waiting
+3aba77e49c91: Waiting
+574b8ee111f1: Pulling fs layer
+22383bce7b1d: Pulling fs layer
+424877746abd: Waiting
+22383bce7b1d: Waiting
+574b8ee111f1: Waiting
+bf2185b42e84: Pulling fs layer
+aa025e3a06b0: Pulling fs layer
+9e9a0e885861: Pulling fs layer
+dc69b9c4bae9: Pulling fs layer
+68de131395fb: Pulling fs layer
+bf2185b42e84: Waiting
+aa025e3a06b0: Waiting
+9e9a0e885861: Waiting
+dc69b9c4bae9: Waiting
+68de131395fb: Waiting
+4f4fb700ef54: Download complete
+23474ccff4ec: Download complete
+23474ccff4ec: Pull complete
+0ef91180750f: Verifying Checksum
+0ef91180750f: Download complete
+8848c7be1069: Download complete
+34f5a1bb0f68: Download complete
+34f5a1bb0f68: Pull complete
+4f4fb700ef54: Pull complete
+8848c7be1069: Pull complete
+0ef91180750f: Pull complete
+44491c0149b5: Download complete
+ec53449e0a78: Download complete
+ec53449e0a78: Pull complete
+44491c0149b5: Pull complete
+3aba77e49c91: Download complete
+3aba77e49c91: Pull complete
+424877746abd: Verifying Checksum
+424877746abd: Download complete
+574b8ee111f1: Verifying Checksum
+574b8ee111f1: Download complete
+424877746abd: Pull complete
+574b8ee111f1: Pull complete
+22383bce7b1d: Download complete
+22383bce7b1d: Pull complete
+aa025e3a06b0: Download complete
+9e9a0e885861: Download complete
+dc69b9c4bae9: Verifying Checksum
+dc69b9c4bae9: Download complete
+68de131395fb: Verifying Checksum
+68de131395fb: Download complete
+nvcr.io/nvidia/isaac-sim@sha256:0c16dd67d09a70ea474f2c809a13c4d09bd23c738184cf1bf28af487ecd39080: Pulling from nvidia/isaac-sim
+20043066d3d5: Already exists
+23474ccff4ec: Pulling fs layer
+34f5a1bb0f68: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+8848c7be1069: Pulling fs layer
+0ef91180750f: Pulling fs layer
+ec53449e0a78: Pulling fs layer
+44491c0149b5: Pulling fs layer
+3aba77e49c91: Pulling fs layer
+424877746abd: Pulling fs layer
+574b8ee111f1: Pulling fs layer
+22383bce7b1d: Pulling fs layer
+bf2185b42e84: Pulling fs layer
+aa025e3a06b0: Pulling fs layer
+9e9a0e885861: Pulling fs layer
+dc69b9c4bae9: Pulling fs layer
+68de131395fb: Pulling fs layer
+8848c7be1069: Waiting
+22383bce7b1d: Waiting
+0ef91180750f: Waiting
+ec53449e0a78: Waiting
+bf2185b42e84: Waiting
+44491c0149b5: Waiting
+aa025e3a06b0: Waiting
+3aba77e49c91: Waiting
+9e9a0e885861: Waiting
+dc69b9c4bae9: Waiting
+424877746abd: Waiting
+68de131395fb: Waiting
+574b8ee111f1: Waiting
+4f4fb700ef54: Verifying Checksum
+4f4fb700ef54: Download complete
+23474ccff4ec: Verifying Checksum
+23474ccff4ec: Download complete
+23474ccff4ec: Pull complete
+0ef91180750f: Verifying Checksum
+0ef91180750f: Download complete
+8848c7be1069: Download complete
+34f5a1bb0f68: Verifying Checksum
+34f5a1bb0f68: Download complete
+34f5a1bb0f68: Pull complete
+4f4fb700ef54: Pull complete
+8848c7be1069: Pull complete
+0ef91180750f: Pull complete
+44491c0149b5: Verifying Checksum
+44491c0149b5: Download complete
+3aba77e49c91: Verifying Checksum
+3aba77e49c91: Download complete
+ec53449e0a78: Verifying Checksum
+ec53449e0a78: Download complete
+ec53449e0a78: Pull complete
+44491c0149b5: Pull complete
+3aba77e49c91: Pull complete
+22383bce7b1d: Verifying Checksum
+22383bce7b1d: Download complete
+424877746abd: Download complete
+424877746abd: Pull complete
+574b8ee111f1: Verifying Checksum
+574b8ee111f1: Download complete
+574b8ee111f1: Pull complete
+22383bce7b1d: Pull complete
+aa025e3a06b0: Verifying Checksum
+aa025e3a06b0: Download complete
+9e9a0e885861: Verifying Checksum
+9e9a0e885861: Download complete
+dc69b9c4bae9: Download complete
+68de131395fb: Verifying Checksum
+68de131395fb: Download complete

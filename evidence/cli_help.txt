@@ -1,0 +1,28 @@
+usage: pebx [-h] [--root ROOT]
+            {doctor,freeze,reconstruct,validate-run,skill-check,generate-conditions,smoke,acquire,adapt}
+            ...
+
+PhysicalEvoBench-X; evidence before performance claims
+
+positional arguments:
+  {doctor,freeze,reconstruct,validate-run,skill-check,generate-conditions,smoke,acquire,adapt}
+    doctor              Check pinned runtime; --sim executes real upstream
+                        reset/step
+    freeze              Freeze only after all physical development checks pass
+    reconstruct         Recompute source/target learning decision from
+                        complete history
+    validate-run        Validate evidence; rejects fake physical results
+    skill-check         Strictly validate a complete five-dimensional
+                        SkillSpec
+    generate-conditions
+                        Generate private development manifests (unfrozen)
+    smoke               Real PhysX development execution; requires pinned
+                        simulation environment
+    acquire             Real PhysX development execution; requires pinned
+                        simulation environment
+    adapt               Real PhysX development execution; requires pinned
+                        simulation environment
+
+options:
+  -h, --help            show this help message and exit
+  --root ROOT

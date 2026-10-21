@@ -1,0 +1,23 @@
+audit_date_utc: '2026-10-21'
+arena:
+  repository: https://github.com/isaac-sim/IsaacLab-Arena.git
+  commit: c7edf3a9d5d8276565208f72422f8f8a0806d6cf
+isaac_lab:
+  repository: https://github.com/isaac-sim/IsaacLab.git
+  commit: 91a0906f93802eb859192dcb0bca879f891e92d6
+isaac_sim:
+  image_tag: nvcr.io/nvidia/isaac-sim:6.1.0
+  registry_amd64_manifest_digest: sha256:0c16dd67d09a70ea474f2c809a13c4d09bd23c738184cf1bf28af487ecd39080
+  image_digest: null # Set only after successful local pull/inspection.
+python:
+  simulation_required: '>=3.12,<3.13'
+  cpu_required: '>=3.10'
+  cpu_validated: '3.12.7'
+physics:
+  backend: physx
+  physics_dt_s: 0.005
+  decimation: 4
+  control_dt_s: 0.02
+assets:
+  verified: false
+  checksums: {}

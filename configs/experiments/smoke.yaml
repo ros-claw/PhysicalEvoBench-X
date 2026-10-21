@@ -1,0 +1,23 @@
+protocol_version: pebx_x_v0.1
+run_name: smoke
+development_validated: false
+physics_backend: physx
+num_envs: 1
+directions:
+  - {source: franka_panda, target: franka_robotiq}
+run_seed_ids: [0]
+source_budget: {exploration: 12, validation: 8}
+target_budgets: [0, 5]
+target_budget_mode: independent_fresh_runs
+source_audit_conditions: 10
+target_test_conditions: 10
+alias_equivalent_conditions: true
+allow_learning_during_test: false
+freeze_files:
+  - configs/tasks/stable_lift_dev.yaml
+  - src/physicalevobench_x/sim/judge.py
+  - src/physicalevobench_x/control/adapter.py
+  - src/physicalevobench_x/control/grasp_lift_executor.py
+  - src/physicalevobench_x/core/schemas.py
+  - src/physicalevobench_x/core/selection.py
+gpu_evidence: {}

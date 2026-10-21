@@ -1,0 +1,8 @@
+registry_name: franka_ik
+native_control_body: panda_hand
+native_control_offset_m: [0.0, 0.0, 0.107]
+canonical_axis_mapping_xyzw: [0.0, 0.0, 0.0, 1.0]
+native_action_scale: 0.5
+open_command: 1.0
+close_command: -1.0
+calibration_status: UNVERIFIED

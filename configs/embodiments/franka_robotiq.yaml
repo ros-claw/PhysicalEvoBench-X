@@ -1,0 +1,8 @@
+registry_name: droid_differential_ik
+native_control_body: base_link
+native_control_offset_m: [0.0, 0.0, 0.0]
+canonical_axis_mapping_xyzw: [0.0, 0.7071067811865476, 0.0, 0.7071067811865476]
+native_action_scale: 0.5
+open_command: 0.0
+close_command: 1.0
+calibration_status: UNVERIFIED

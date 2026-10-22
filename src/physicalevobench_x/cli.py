@@ -25,19 +25,36 @@ def main():
     p = sub.add_parser('generate-conditions', help='Generate private development manifests (unfrozen)')
     p.add_argument('--seed', type=int, required=True)
     p.add_argument('--output', type=Path, required=True)
-    for name in ('smoke','acquire','adapt'):
+    p = sub.add_parser('llm-probe', help='Make one bounded real proposal with an explicit learner config')
+    p.add_argument('--config',type=Path,required=True)
+    p.add_argument('--output',type=Path,required=True)
+    for name in ('smoke','acquire','adapt','calibrate','dynamics-check'):
         p = sub.add_parser(name, help='Real PhysX development execution; requires pinned simulation environment')
         p.add_argument('--embodiment', choices=['franka_panda','franka_robotiq'], required=True)
         p.add_argument('--output',type=Path,required=True)
         p.add_argument('--seed',type=int,default=0)
         if name == 'smoke':
             p.add_argument('--episodes',type=int,default=10)
+        if name in ('acquire','adapt'):
+            p.add_argument('--learner',choices=['random_search_v1','bounded_llm_v1'],default='random_search_v1')
+            p.add_argument('--learner-config',type=Path,default=Path('configs/learners/kimi_k3.yaml'))
         if name == 'adapt':
             p.add_argument('--budget',type=int,choices=[0,5,20],required=True)
             p.add_argument('--skill',type=Path,required=True)
     args = parser.parse_args()
     try:
-        if args.command in ('smoke','acquire','adapt'):
+        if args.command == 'llm-probe':
+            from .learners.factory import proposer_factory
+            from .core.schemas import SkillSpec
+            args.output.mkdir(parents=True,exist_ok=False)
+            proposer=proposer_factory('bounded_llm_v1',args.config,args.output/'calls.jsonl')(0)
+            skill=proposer.propose(SkillSpec.initial(),[])
+            result=dict(skill=skill.model_dump(),semantic_hash=skill.semantic_hash,
+                        fallback=bool(proposer.proposals[-1].get('fallback')),formal_result_eligible=False)
+            write_json(args.output/'result.json',result)
+            print(canonical(result))
+            return 2 if result['fallback'] else 0
+        if args.command in ('smoke','acquire','adapt','calibrate','dynamics-check'):
             from .sim.doctor import doctor
             readiness = doctor(args.root)
             if readiness['status'] != 'READY_FOR_SIM_PROBE':

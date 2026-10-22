@@ -1,0 +1,14 @@
+learner_id: bounded_llm_v1
+provider: kimi_coding
+protocol: openai_chat_completions
+endpoint: https://api.kimi.com/coding/v1/chat/completions
+model: k3
+api_key_env: PEBX_LLM_API_KEY
+reasoning_effort: low
+temperature: 1 # Provider rejects every other value for k3.
+max_input_tokens: 6000
+max_output_tokens: 800
+request_timeout_s: 60
+max_requests_per_candidate: 2
+# Provider-advertised capability; experimental input remains capped at 6000.
+advertised_context_window_tokens: 1048576

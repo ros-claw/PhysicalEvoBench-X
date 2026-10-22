@@ -18,6 +18,8 @@ def freeze(config, root, output):
     lock = yaml.safe_load((root/'dependencies.lock.yaml').read_text())
     if lock.get('installation_method') == 'native_uv':
         native = lock.get('native', {})
+        if not native.get('dependency_metadata_reviewed',False):
+            raise ValueError('Native dependency metadata exceptions require review before freeze')
         for path_key, hash_key in [('uv_lock_path','uv_lock_sha256'),('runtime_snapshot_path','runtime_snapshot_sha256')]:
             expected = native.get(hash_key, '')
             if not re.fullmatch('[0-9a-f]{64}', expected) or file_digest(root/native[path_key]) != expected:

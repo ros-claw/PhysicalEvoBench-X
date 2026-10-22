@@ -28,3 +28,5 @@ native:
   uv_lock_sha256: 485a01f6514d19fa066572033d76ceebcdd81c0813d7356919b4b19cd063d43d
   runtime_snapshot_path: evidence/native/runtime_snapshot.json
   runtime_snapshot_sha256: ab86dea7ce47fa56697e6b72bfd743cacef9e1add2a5ec9fdd64f44a78292de8
+  dependency_metadata_reviewed: false
+  dependency_metadata_report: evidence/native/package_check.log

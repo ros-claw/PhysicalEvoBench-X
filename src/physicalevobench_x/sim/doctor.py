@@ -45,9 +45,11 @@ def doctor(root):
     own_arena = spec is not None and Path(spec.origin).resolve() == expected_origin.resolve()
     checks['runtime_packages'] = dict(actual=versions, expected=expected, ok=versions == expected)
     checks['arena_import'].update(origin=spec.origin if spec else None, own_checkout=own_arena)
+    checks['dependency_metadata'] = capture(['uv','pip','check','--python',sys.executable])
     ready = (checks['python']['ok'] and checks['platform']['ok']
         and checks['arena']['matches_lock'] and checks['isaac_lab']['matches_lock']
         and checks['gpu']['ok'] and checks['arena_import']['ok']
         and own_arena and checks['runtime_packages']['ok'])
     return dict(status='READY_FOR_SIM_PROBE' if ready else 'BLOCKED_ENVIRONMENT',
-        gpu_verified=False, formal_result_eligible=False, checks=checks)
+        gpu_verified=False, formal_result_eligible=False, ready_for_pilot=False,
+        dependency_metadata_fully_consistent=checks['dependency_metadata']['ok'],checks=checks)

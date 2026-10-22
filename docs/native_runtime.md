@@ -29,3 +29,9 @@ Development findings and repairs:
 - A first dynamic-setter mass diagnostic failed backend/impulse consistency. The production runner does not use that path: it isolates every condition in a new scene with spawn-time mass. The diagnostic was changed to test that same production strategy. Fresh low/high/low scenes give correct backend mass/inertia/material readbacks and force response. Persistent online mass randomization remains unsupported.
 
 Raw task runs and full traces are retained locally under `runs/`; small authentic episode tables, checksums and diagnostic reports are tracked under `evidence/gpu/`. Nominal successes are development acceptance evidence, not formal transfer measurements.
+
+## Dependency metadata review
+
+`uv pip check` reports seven metadata incompatibilities; its complete output is retained as `evidence/native/package_check.log`. Six correspond to explicit upstream uv overrides (NumPy/openpi, requests/boto3/simready, Newton, websockets and packaging). A seventh is the installed isaacsim-robot metadata requesting onnxruntime-gpu while the fixed lock selects CPU onnxruntime. The measured state/IK/PhysX track uses no ONNX policy, and all reported physical checks ran successfully, but this is not a claim that every optional upstream path is compatible. No packages were blindly upgraded to silence the checker.
+
+The dependency lock marks this review incomplete. `doctor` exposes the metadata-check result separately from readiness for the measured simulation probe; formal freeze rejects native dependency exceptions until reviewed. ONNX inference and optional OpenPI/Newton/search features are not validated by this benchmark's current physical evidence.

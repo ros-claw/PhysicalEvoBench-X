@@ -73,5 +73,3 @@ def calibrate(embodiment, output):
     finally:
         env.close()
         teardown_simulation_app()
-
-

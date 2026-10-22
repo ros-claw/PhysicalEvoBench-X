@@ -21,3 +21,7 @@ Inspected actual local source at Arena `c7edf3a9d5d8276565208f72422f8f8a0806d6cf
 Arena's Python package reports 0.3.0; the git SHA is the authority. The selected upstream dev image also requires Isaac-GR00T's pinned submodule even though the benchmark does not use a GR00T policy. The checkout command retrieves that dependency without smudging model payloads.
 
 Registry manifest inspection confirmed the amd64 image digest listed in the dependency lock. Local pull/launch is a separate gate and remains recorded in evidence. Source inspection is not GPU behavior validation.
+
+## Native execution update (2026-10-22)
+
+The originally inspected call chain is now exercised by the independent native uv installation. Both `franka_ik` and `droid_differential_ik` passed GPU reset/step; each has 10 nominal StableLift successes, TCP/gripper/rotation checks, and mass/inertia/material/force-response diagnostics. Live task state is shared through the environment because manager configs are deep-copied. The pinned AppLauncher accepts the `HEADLESS` environment setting, not the earlier assumed `--headless` CLI flag. Real evidence is under `evidence/native/` and `evidence/gpu/`; no tracked upstream source was patched.

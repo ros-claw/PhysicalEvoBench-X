@@ -1,0 +1,1 @@
+{"control_dt":0.02,"embodiment":"franka_panda","formal_result_eligible":false,"physics_dt":0.005,"stable_lift_verified":false,"status":"GPU_RESET_STEP_VERIFIED","steps":10,"task":"upstream_lift_object"}

@@ -7,7 +7,7 @@ from ..core.hashing import append_json, write_json
 def execute(args):
     from isaaclab_arena.cli.isaaclab_arena_cli import get_isaaclab_arena_cli_parser
     from isaaclab_arena.utils.isaaclab_utils.simulation_app import SimulationAppContext
-    startup=get_isaaclab_arena_cli_parser().parse_args(['--headless'])
+    startup=get_isaaclab_arena_cli_parser().parse_args([])
     with SimulationAppContext(startup):
         from .runner import PhysXRunner
         from ..core.conditions import generate
@@ -18,6 +18,12 @@ def execute(args):
         output=Path(args.output).resolve()
         if output.exists():
             raise ValueError('Output exists; refusing to overwrite physical evidence')
+        if args.command=='calibrate':
+            from .calibration import calibrate
+            return calibrate(args.embodiment,output)
+        if args.command=='dynamics-check':
+            from .dynamics import dynamics_check
+            return dynamics_check(args.embodiment,output)
         initial=SkillSpec.initial()
         if args.command=='smoke':
             output.mkdir(parents=True)
@@ -37,6 +43,8 @@ def execute(args):
                 initial=SkillSpec.model_validate_json(Path(args.skill).read_text())
             # Trajectories are outside learn output so its exclusive mkdir remains effective.
             runner=PhysXRunner(args.embodiment,output.parent/(output.name+'_trajectories'))
-            after=learn(initial,budget,c[prefix+'_train'],c[prefix+'_validation'],RandomSearch,args.seed,runner,output)
+            from ..learners.factory import proposer_factory
+            factory=proposer_factory(args.learner,args.learner_config,output/'model_calls.jsonl')
+            after=learn(initial,budget,c[prefix+'_train'],c[prefix+'_validation'],factory,args.seed,runner,output)
             return dict(output=str(output),skill_hash=after.semantic_hash,formal_result_eligible=False)
         raise ValueError('Unsupported GPU command')

@@ -16,15 +16,23 @@ from .state_reader import array
 from ..control.adapter import EmbodimentAdapter
 from ..control.grasp_lift_executor import GraspLiftExecutor
 from ..core.schemas import EpisodeResult
-from ..core.hashing import file_digest, write_json
+from ..core.hashing import file_digest, write_json, append_json
 
 
 class PhysXRunner:
     def __init__(self, embodiment, output):
         self.embodiment, self.output = embodiment, Path(output)
         self.output.mkdir(parents=True,exist_ok=True)
+        package_root=Path(__file__).resolve().parents[1]
+        self.frozen_files={str(p):file_digest(p) for part in ('core','control','sim','learners','protocol')
+            for p in (package_root/part).rglob('*.py')}
+        write_json(self.output/'runtime_inputs.json',dict(source_files=self.frozen_files,
+            embodiment=embodiment,development_unvalidated=True))
 
+    @torch.inference_mode()
     def run(self, *, skill, condition, phase, candidate_index, attempt_index):
+        if any(file_digest(path)!=checksum for path,checksum in self.frozen_files.items()):
+            raise RuntimeError('Runtime source changed; refusing to mix versions in one run')
         started=time.monotonic()
         episode_id=uuid.uuid4().hex
         axis=(0.,0.,0.,1.) if self.embodiment=='franka_panda' else (0.,2**-.5,0.,2**-.5)
@@ -32,8 +40,11 @@ class PhysXRunner:
             axis_mapping_xyzw=axis, mass_kg=condition['mass_kg'],offset_xy_m=tuple(condition['offset_xy_m']),
             yaw_rad=condition['yaw_rad']))
         env,cfg=ArenaEnvBuilder(arena,ArenaEnvBuilderCfg(num_envs=1,solve_relations=False,
-            resolve_on_reset=False,seed=condition['reset_seed'],mimic=False)).make_registered_and_return_cfg()
+            resolve_on_reset=False,seed=condition['reset_seed'],mimic=False,
+            recorder_dataset_export_dir_path=str(self.output/episode_id),recorder_dataset_filename='arena')).make_registered_and_return_cfg()
         base=env.unwrapped
+        base.pebx_task = arena.task
+        base.configure_episode_limit(1)
         steps, states, actions = 0, [], []
         try:
             if abs(base.physics_dt-.005)>1e-9 or abs(base.step_dt-.02)>1e-9:
@@ -53,6 +64,8 @@ class PhysXRunner:
             open_action=np.zeros(7)
             open_action[-1]=1. if self.embodiment=='franka_panda' else 0.
             initial=None
+            write_json(self.output/(episode_id+'_reset.json'),dict(observation=reader.read(base,episode_id).model_dump(),
+                mass_readback_kg=mass.tolist(),condition=condition,skill=skill.model_dump()))
             while steps < 780:
                 obs=reader.read(base,episode_id)
                 if obs.sim_time_s >= .5-1e-9 and initial is None:
@@ -63,11 +76,16 @@ class PhysXRunner:
                     executor.reset(skill,obs)
                     task.judge.reset(obs)
                     task.ready=True
+                command_record=None
                 if initial is None:
                     action=open_action.copy()
                 else:
                     cmd=executor.step(obs)
+                    command_record=cmd.model_dump(mode="json")
                     action=adapter.encode(cmd,reader.root_w,reader.control_w,reader.control_to_tcp)
+                append_json(self.output/(episode_id+"_trace.jsonl"),dict(observation=obs.model_dump(),
+                    native_action=action.tolist(),canonical_command=command_record,
+                    stage=executor.stage if initial else "INITIAL_SETTLE"))
                 states.append(obs.model_dump())
                 actions.append(action.copy())
                 _,_,terminated,truncated,_=env.step(torch.as_tensor(action,device=base.device,dtype=torch.float32)[None,:])
@@ -91,5 +109,12 @@ class PhysXRunner:
                 attempt_index=attempt_index,simulator_steps=steps*4,sim_time_s=steps*.02,
                 wall_time_s=time.monotonic()-started,trajectory_path=str(trajectory),
                 trajectory_sha256=file_digest(trajectory),**evidence['result'])
+        except Exception as exc:
+            write_json(self.output/(episode_id+'_error.json'),dict(error=type(exc).__name__,message=str(exc),
+                simulator_steps=steps*4,wall_time_s=time.monotonic()-started,
+                last_observation=states[-1] if states else None))
+            raise
         finally:
             env.close()
+            from isaaclab_arena.utils.isaaclab_utils.simulation_app import teardown_simulation_app
+            teardown_simulation_app()

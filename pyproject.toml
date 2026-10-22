@@ -7,7 +7,7 @@ name = "physicalevobench-x"
 version = "0.1.0"
 description = "Auditable marginal robot-experience transfer under matched adaptation budgets"
 requires-python = ">=3.10"
-dependencies = ["pydantic==2.12.3", "numpy>=2.2.6,<3", "PyYAML==6.0.3"]
+dependencies = ["pydantic>=2.11.10,<3", "numpy>=2.2.6,<3", "PyYAML==6.0.3"]
 
 [project.optional-dependencies]
 dev = ["pytest==8.4.2"]

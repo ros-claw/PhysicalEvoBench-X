@@ -38,8 +38,8 @@ class StableLiftTask(TaskBase):
 
     def get_termination_cfg(self):
         return TaskTerminationCfg(timeout_s=15.5,
-            success=[CompletionCriteria(name='stable_lift',predicate_sequence=[partial(task_success, task=self)])],
-            failures={'pebx_failure':TerminationTermCfg(func=task_failure,params={'task':self})})
+            success=[CompletionCriteria(name='stable_lift',predicate_sequence=[task_success])],
+            failures={'pebx_failure':TerminationTermCfg(func=task_failure,params={})})
 
     def sample(self, env):
         tick = int(env.common_step_counter)
@@ -69,16 +69,16 @@ class StableLiftTask(TaskBase):
         return result
 
 
-def task_success(env, task):
-    result = task.sample(env)
+def task_success(env):
+    result = env.pebx_task.sample(env)
     return torch.tensor([bool(result and result['task_success'])],device=env.device)
 
 
-def task_failure(env, task):
-    result = task.sample(env)
+def task_failure(env):
+    result = env.pebx_task.sample(env)
     return torch.tensor([bool(result and not result['task_success'])],device=env.device)
 
 
-def terminal_record(env, env_id, task):
-    task.sample(env)
-    return {'pebx_terminal_evidence':copy.deepcopy(task.terminal_evidence)}
+def terminal_record(env, env_id):
+    env.pebx_task.sample(env)
+    return {'pebx_terminal_evidence':copy.deepcopy(env.pebx_task.terminal_evidence)}

@@ -10,7 +10,7 @@ def probe(embodiment, output):
     # These upstream imports deliberately follow policy_runner.py startup ordering.
     from isaaclab_arena.cli.isaaclab_arena_cli import get_isaaclab_arena_cli_parser
     from isaaclab_arena.utils.isaaclab_utils.simulation_app import SimulationAppContext
-    args = get_isaaclab_arena_cli_parser().parse_args(['--headless'])
+    args = get_isaaclab_arena_cli_parser().parse_args([])
     with SimulationAppContext(args):
         import torch
         from isaaclab_arena_environments.lift_object_environment import LiftObjectEnvironment, LiftObjectEnvironmentCfg
@@ -19,7 +19,9 @@ def probe(embodiment, output):
         names = {'franka_panda': 'franka_ik', 'franka_robotiq': 'droid_differential_ik'}
         arena_env = LiftObjectEnvironment().build(LiftObjectEnvironmentCfg(embodiment=names[embodiment]))
         env, cfg = ArenaEnvBuilder(arena_env, ArenaEnvBuilderCfg(num_envs=1, solve_relations=False,
-                                                              resolve_on_reset=False)).make_registered_and_return_cfg()
+                                                              resolve_on_reset=False,
+                recorder_dataset_export_dir_path=str(Path(output).parent/('arena_probe_'+embodiment)),
+                recorder_dataset_filename='probe')).make_registered_and_return_cfg()
         base = env.unwrapped
         if abs(base.physics_dt-.005)>1e-9 or abs(base.step_dt-.02)>1e-9:
             raise RuntimeError('Control frequency mismatch')

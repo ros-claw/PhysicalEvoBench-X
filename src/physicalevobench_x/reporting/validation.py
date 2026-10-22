@@ -23,7 +23,16 @@ def validate_run(directory):
     from ..sim.doctor import ARENA_SHA, LAB_SHA
     if dependencies.get('arena_commit') != ARENA_SHA or dependencies.get('isaac_lab_commit') != LAB_SHA:
         raise ValueError('Unpinned dependencies')
-    if not re.fullmatch('sha256:[0-9a-f]{64}', dependencies.get('image_digest','')):
+    if dependencies.get('installation_method') == 'native_uv':
+        if (not re.fullmatch('[0-9a-f]{64}', dependencies.get('uv_lock_sha256',''))
+            or dependencies.get('packages',{}).get('isaacsim') != '6.1.0.0'
+            or dependencies.get('packages',{}).get('isaaclab') != '17.0.2'):
+            raise ValueError('Missing or invalid native runtime provenance')
+        records_hashes=dependencies.get('package_record_sha256',{})
+        for name in ('isaacsim','isaaclab','isaaclab-arena','torch'):
+            if not re.fullmatch('[0-9a-f]{64}', records_hashes.get(name,'')):
+                raise ValueError('Missing native package fingerprint: '+name)
+    elif not re.fullmatch('sha256:[0-9a-f]{64}', dependencies.get('image_digest','')):
         raise ValueError('Missing image digest')
     paths = sorted(root.rglob('*results.jsonl'))
     if not paths:

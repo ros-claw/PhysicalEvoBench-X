@@ -7,6 +7,9 @@ from ..control.geometry import compose, relative, multiply
 def array(value):
     if hasattr(value, 'torch'):
         value = value.torch
+    if not hasattr(value, 'detach'):
+        import warp as wp
+        value = wp.to_torch(value)
     return value.detach().cpu().numpy().copy()
 
 

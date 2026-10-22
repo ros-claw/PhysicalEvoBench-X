@@ -9,3 +9,5 @@ private/
 *.npz
 build/
 dist/
+
+.cache/

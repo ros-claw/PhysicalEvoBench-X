@@ -16,7 +16,19 @@ def freeze(config, root, output):
     if not cfg.get('development_validated'):
         raise ValueError('Task distribution/bounds have not passed development validation')
     lock = yaml.safe_load((root/'dependencies.lock.yaml').read_text())
-    if not re.fullmatch(r'sha256:[0-9a-f]{64}', lock['isaac_sim'].get('image_digest') or ''):
+    if lock.get('installation_method') == 'native_uv':
+        native = lock.get('native', {})
+        for path_key, hash_key in [('uv_lock_path','uv_lock_sha256'),('runtime_snapshot_path','runtime_snapshot_sha256')]:
+            expected = native.get(hash_key, '')
+            if not re.fullmatch('[0-9a-f]{64}', expected) or file_digest(root/native[path_key]) != expected:
+                raise ValueError('Native runtime provenance mismatch')
+        runtime = json.loads((root/native['runtime_snapshot_path']).read_text())
+        from ..sim.doctor import ARENA_SHA, LAB_SHA
+        if (runtime.get('arena_commit') != ARENA_SHA or runtime.get('isaac_lab_commit') != LAB_SHA
+            or runtime.get('uv_lock_sha256') != native['uv_lock_sha256']
+            or runtime.get('packages',{}).get('isaacsim') != '6.1.0.0'):
+            raise ValueError('Unverified native simulation version')
+    elif not re.fullmatch(r'sha256:[0-9a-f]{64}', lock['isaac_sim'].get('image_digest') or ''):
         raise ValueError('Missing locally pulled image digest')
     files = cfg.get('freeze_files', [])
     if not files:

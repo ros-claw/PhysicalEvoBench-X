@@ -1,0 +1,9 @@
+# Candidate only. Does not change SkillSpec v1 or authorize formal results.
+version: common_range_candidate_v1
+formal_result_eligible: false
+bounds:
+  grasp_height_fraction: [0.45, 0.75]
+  pregrasp_clearance_m: [0.07, 0.12]
+  settle_time_s: [0.10, 0.50]
+  lift_vmax_mps: [0.03, 0.10]
+  lift_amax_mps2: [0.10, 0.80]

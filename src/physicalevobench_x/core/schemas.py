@@ -32,7 +32,7 @@ class Requirements(StrictModel):
 
 class SkillSpec(StrictModel):
     schema_version: Literal['physicalevobench_x.skillspec.v1']
-    controller_family: Literal['grasp_lift_state_v1']
+    controller_family: Literal['grasp_lift_state_v1', 'grasp_lift_state_v2']
     parameters: Parameters
     requirements: Requirements
 
@@ -43,7 +43,7 @@ class SkillSpec(StrictModel):
     @classmethod
     def initial(cls):
         return cls(schema_version='physicalevobench_x.skillspec.v1',
-                   controller_family='grasp_lift_state_v1',
+                   controller_family='grasp_lift_state_v2',
                    parameters=Parameters(grasp_height_fraction=.5, pregrasp_clearance_m=.07,
                                          settle_time_s=.3, lift_vmax_mps=.1, lift_amax_mps2=.3),
                    requirements=Requirements(end_effector='parallel_jaw',

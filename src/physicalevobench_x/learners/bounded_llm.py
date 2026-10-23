@@ -65,6 +65,9 @@ class BoundedLLM:
                 response = self.transport(payload)
                 raw = response['choices'][0]['message']['content']
                 candidate = SkillSpec.model_validate_json(raw)
+                if candidate.controller_family != incumbent.controller_family:
+                    candidate = None
+                    raise ValueError('Controller family is fixed by the evaluator')
                 return candidate
             except (ValueError, KeyError, IndexError, OSError, TimeoutError) as exc:
                 error = type(exc).__name__

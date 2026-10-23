@@ -67,6 +67,8 @@ def learn(initial, budget, train, validation, proposer_factory, seed, runner, ou
             append_json(output/'proposal_requests.jsonl', request)
             try:
                 candidate = SkillSpec.model_validate(proposer.propose(incumbent, list(history)))
+                if candidate.controller_family != initial.controller_family:
+                    raise ValueError('Learner cannot change the fixed controller family')
                 proposal_error = None
             except (ValueError, TimeoutError) as exc:
                 candidate, proposal_error = incumbent, type(exc).__name__

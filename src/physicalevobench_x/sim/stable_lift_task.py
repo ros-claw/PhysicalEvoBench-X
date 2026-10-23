@@ -7,7 +7,7 @@ from isaaclab_arena.tasks.task_base import TaskBase
 from isaaclab_arena.tasks.task_termination_cfg import TaskTerminationCfg
 from isaaclab_arena.progress_tracking.completion_criteria import CompletionCriteria
 from isaaclab_arena.metrics.success_rate import SuccessRateMetric
-from .judge import StableLiftJudge
+from .judge import StableLiftJudge, robot_hard_failures
 from ..control.geometry import rotate
 import numpy as np
 
@@ -62,7 +62,10 @@ class StableLiftTask(TaskBase):
         axes = [rotate(q, np.eye(3)[i]) for i in range(3)]
         radius_z = sum(abs(axes[i][2])*size[i]/2 for i in range(3))
         clear = obs.object_pose_w.position_m[2]-radius_z > .01
-        result = self.judge.update(obs,static_support_clear=clear)
+        from .state_reader import array
+        limits = array(env.scene['robot'].data.joint_pos_limits)[0]
+        result = self.judge.update(obs,static_support_clear=clear,
+                                  hard_failures=robot_hard_failures(obs, limits))
         if result is not None:
             # Saved during termination computation, before auto-reset. Recorder copies it.
             self.terminal_evidence = dict(result=copy.deepcopy(result),observation=obs.model_dump())

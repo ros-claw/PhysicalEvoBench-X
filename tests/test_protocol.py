@@ -180,3 +180,17 @@ def test_test_split_cannot_become_training_feedback(tmp_path,runner):
     with pytest.raises(ValueError,match='training split'):
         learn(SkillSpec.initial(),5,c['target_test'],c['target_validation'],RandomSearch,1,runner,tmp_path/'bad')
     assert runner.requests==[]
+
+
+def test_proposer_cannot_switch_fixed_controller(tmp_path, runner):
+    class Switch:
+        def __init__(self, seed):
+            pass
+        def propose(self, incumbent, history):
+            return incumbent.model_dump() | {'controller_family': 'grasp_lift_state_v1'}
+    c = generate(3, dict(target_train=1, target_validation=1))
+    out = tmp_path/'switch'
+    learn(SkillSpec.initial(), 5, c['target_train'], c['target_validation'], Switch, 1, runner, out)
+    responses = [json.loads(line) for line in (out/'proposal_responses.jsonl').read_text().splitlines()]
+    assert all(r['error'] == 'ValueError' for r in responses)
+    assert {r[1] for r in runner.requests} == {SkillSpec.initial().semantic_hash}

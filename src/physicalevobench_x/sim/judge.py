@@ -5,6 +5,19 @@ import numpy as np
 from ..control.geometry import relative, angle
 
 
+def robot_hard_failures(obs, joint_limits, tolerance_rad=.01):
+    """Trusted measured limits; never expose evaluator limits/state to proposer."""
+    limits = np.asarray(joint_limits)
+    if limits.shape != (len(obs.joint_positions), 2):
+        raise ValueError('Missing or mismatched robot joint limits')
+    joints = np.asarray(obs.joint_positions)
+    outside = (np.any(joints < limits[:, 0]-tolerance_rad)
+               or np.any(joints > limits[:, 1]+tolerance_rad)
+               or any(p < lo or p > hi for p, lo, hi in
+                      zip(obs.tcp_pose_w.position_m, obs.workspace_min_m, obs.workspace_max_m)))
+    return ('JOINT_OR_WORKSPACE_LIMIT',) if outside else ()
+
+
 @dataclass(frozen=True)
 class JudgeConfig:
     lift_m: float = .08

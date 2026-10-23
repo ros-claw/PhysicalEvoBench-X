@@ -45,3 +45,15 @@ ACCEPT_EULA=Y PEBX_GPU=1 scripts/run_native.sh acquire --embodiment franka_panda
 发现并保留的问题：最初 Panda 默认准备姿态越界、默认 HDF5 路径的并行锁冲突、标定报告的 NumPy 布尔序列化错误、低层动态改质量诊断不一致。它们均保留原始失败日志；最终名义验证使用统一固定的开发配置。Panda/Robotiq 的低抓取高度下降受阻；Robotiq 还在最低净空与最长等待处失败。下降受阻与桌面几何干涉一致，具体接触机理仍需诊断。不能把全部参数范围当作已验证可行。
 
 下一步：审查已完成的双本体敏感性测量并确定共同可行范围 → 冻结独立分布/私有 split 和全部版本 → 完整源审计及 0/5/20 fresh target 配对实验 → 双向多种子 pilot → 完整统计、成本与复现验收。当前所有开发结果 `formal_result_eligible=false`。原生 `uv pip check` 的 7 个元数据例外已保留并逐项对照上游锁/覆盖配置；当前物理路径通过不等于全部可选功能通过，正式例外审查标记仍为未完成。
+
+## 2026-10-23 后续实施
+
+已完成请求轨迹/实际跟踪诊断，确认 v1 的阶段边界参考跳变；新增显式版本 `grasp_lift_state_v2`，保留旧分支和旧产物重建。提案器不得更换控制器。新增实测 TCP/关节位置硬约束、完整包源码与 YAML 的运行期变动检查。详见 `docs/controller_v2.md`。历史 v1 标定和名义成功记录没有重新标为 v2 验收。
+
+共同范围候选已预先列出 23 个开发检查：15 个单参数低中高和 8 个组合物理边界压力条件。v1 的初次范围批次因发现控制器问题而主动中断，所有部分结果保留在 `runs/`；v2 双本体批次正在执行，未提前宣称通过。
+
+依赖元数据审查记录在 `docs/dependency_review.md` 和 `evidence/native/dependency_review.json`；结论仅覆盖 state/IK/PhysX。资产清单 `evidence/native/asset_inventory_complete.json` 覆盖 483 个文件，包含完整运行时材质库；USD 遍历无未覆盖引用。它不是渲染器 resolver 的逐调用追踪。锁文件采用这些审查结论前仍保持冻结阻断。
+
+双向矩阵脚本、私有条件、阶段 checkpoint、物理/提案 journal、随机状态恢复和锁已实现。完整默认计划是 12 个独立学习包、5,640 个逻辑回合，**计划不等于已执行结果**。正常已完成阶段可续跑；不确定的在途调用停止而不静默重试。CPU 测试已覆盖完整预算/alias/续跑链，当前 73 项通过，未代替 GPU 验收。操作见 `docs/pilot_execution.md`。
+
+正式冻结和 pilot 仍未通过；只读缺口清单在 `evidence/freeze_readiness.json`。继续完成范围检查、最终配置/依赖采用、匹配最终代码 hash 的 GPU 验收，再启动完整矩阵。

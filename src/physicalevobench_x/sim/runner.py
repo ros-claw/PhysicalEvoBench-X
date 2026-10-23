@@ -24,8 +24,9 @@ class PhysXRunner:
         self.embodiment, self.output = embodiment, Path(output)
         self.output.mkdir(parents=True,exist_ok=True)
         package_root=Path(__file__).resolve().parents[1]
-        self.frozen_files={str(p):file_digest(p) for part in ('core','control','sim','learners','protocol')
-            for p in (package_root/part).rglob('*.py')}
+        self.frozen_files={str(p):file_digest(p) for p in package_root.rglob('*.py')}
+        repo_root=package_root.parents[1]
+        self.frozen_files.update({str(p):file_digest(p) for p in (repo_root/'configs').rglob('*.yaml')})
         write_json(self.output/'runtime_inputs.json',dict(source_files=self.frozen_files,
             embodiment=embodiment,development_unvalidated=True))
 

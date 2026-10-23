@@ -27,7 +27,12 @@ class GraspLiftExecutor:
     def _transition(self, stage, obs, goal):
         self.stage_times[self.stage] = obs.sim_time_s-self.stage_start
         self.stage, self.stage_start = stage, obs.sim_time_s
-        self.start = np.asarray(obs.tcp_pose_w.position_m)
+        # v2 joins reference segments continuously. Restarting at the measured
+        # TCP after a tolerated tracking error introduces a one-tick jump that
+        # can exceed the learner's requested reference speed. The lift endpoint
+        # remains anchored to the measured TCP at entry, as specified below.
+        self.start = (self.target.copy() if self.skill.controller_family == 'grasp_lift_state_v2'
+                      else np.asarray(obs.tcp_pose_w.position_m))
         self.goal = np.asarray(goal)
 
     def step(self, obs):

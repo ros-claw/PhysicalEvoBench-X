@@ -1,0 +1,134 @@
+{
+  "checked_at_utc": "2026-10-23T23:42:56.941526+00:00",
+  "scope": "READ_ONLY_PARTIAL_EVIDENCE_REVIEW",
+  "formal_result_eligible": false,
+  "errors": [],
+  "gpu_acceptance_checks": 10,
+  "execution_inputs_unchanged": true,
+  "freeze_hash": "7cacefee6baff0ceb9a2c2c0aa9c0ed59ed050cf354166deed29a180aed2b1db",
+  "planned_packages": 12,
+  "completed_packages": 0,
+  "packages": [
+    {
+      "package": "random_search_v1/franka_panda/seed-0",
+      "stages": {
+        "source_audit": {
+          "complete": true,
+          "paired_summary": {
+            "after_successes": 49,
+            "before_successes": 49,
+            "delta_new": 0.0,
+            "evaluation_aliased": true,
+            "pairs": 50
+          },
+          "physical_calls": 50
+        },
+        "target_0_before": {
+          "complete": true
+        },
+        "target_5_before": {
+          "complete": true,
+          "selection": {
+            "accepted_update": false,
+            "reason": "ROLLBACK",
+            "selected_index": 1
+          },
+          "validation_successes": {
+            "before": 1,
+            "candidate": 1
+          },
+          "physical_calls": 5
+        },
+        "source": {
+          "complete": true,
+          "selection": {
+            "accepted_update": false,
+            "reason": "ROLLBACK",
+            "selected_index": 3
+          },
+          "validation_successes": {
+            "before": 4,
+            "candidate": 4
+          },
+          "physical_calls": 20
+        },
+        "evaluation_0": {
+          "complete": true,
+          "paired_summary": {
+            "after_successes": 49,
+            "before_successes": 49,
+            "delta_new": 0.0,
+            "evaluation_aliased": true,
+            "pairs": 50
+          },
+          "physical_calls": 50
+        },
+        "evaluation_5": {
+          "complete": false,
+          "physical_calls": 12
+        }
+      },
+      "complete": false
+    },
+    {
+      "package": "random_search_v1/franka_robotiq/seed-0",
+      "stages": {
+        "source": {
+          "complete": true,
+          "selection": {
+            "accepted_update": true,
+            "reason": "success",
+            "selected_index": 1
+          },
+          "validation_successes": {
+            "before": 2,
+            "candidate": 4
+          },
+          "physical_calls": 20
+        },
+        "source_audit": {
+          "complete": false,
+          "physical_calls": 51,
+          "partial_pair_count": 25,
+          "partial_before_successes": 23,
+          "partial_after_successes": 25,
+          "warning": "Incomplete prefix; not a completed source audit or a confirmatory estimate"
+        }
+      },
+      "complete": false
+    }
+  ],
+  "hash_verified_files": 776,
+  "journal_totals": {
+    "journal_entries": 208,
+    "completed_physical_calls": 208
+  },
+  "recorded_episodes_rejudged_offline": 208,
+  "rejudge_scope": "Replay of recorded observations through existing frozen judge; verifies recording/scoring consistency, not an independent physics replication or independent judge implementation",
+  "throughput": [
+    {
+      "embodiment": "franka_robotiq",
+      "completed_episodes": 100,
+      "successes": 96,
+      "episode_wall": {
+        "maximum_s": 124.82082218304276,
+        "median_s": 63.583993036299944,
+        "minimum_s": 57.173105395864695,
+        "p95_s": 71.08379173532592
+      }
+    },
+    {
+      "embodiment": "franka_panda",
+      "completed_episodes": 100,
+      "successes": 100,
+      "episode_wall": {
+        "maximum_s": 31.771595869213343,
+        "median_s": 26.117391970474273,
+        "minimum_s": 23.582657148130238,
+        "p95_s": 28.48852944134269
+      }
+    }
+  ],
+  "stop_reason": "DISK_LIMIT",
+  "conclusion": "INCOMPLETE_NO_CONFIRMED_POSITIVE_TRANSFER"
+}

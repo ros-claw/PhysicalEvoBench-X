@@ -1,0 +1,8 @@
+{
+  "source": "/code/rosclaw/physicalEvoBench_X/runs/complete-v2-20261023",
+  "destination": "/home/dell/pebx-experiments/complete-v2-20261023",
+  "files_verified_identical": 3452,
+  "reason": "DISK_LIMIT on /code; preserve original paths via directory symlink",
+  "original_path_is_symlink": true,
+  "destination_free_bytes": 64269983744
+}

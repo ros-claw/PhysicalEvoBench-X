@@ -69,3 +69,5 @@ ACCEPT_EULA=Y PEBX_GPU=1 scripts/run_native.sh acquire --embodiment franka_panda
 CLI 已补齐 `evaluate`、完整流水线 `run`、中英文 `report`（可选 SVG/PDF 图）。矩阵、私有 split、fresh proposer、真实别名、完整成本、随机状态恢复、原始证据 hash 和独立审计均实现。测试还覆盖一侧 infra 时另一侧原尝试不进入成功率、但成本完整保留的情形。当前 CPU 测试 84 项；阶段功能实现不等于正式矩阵已测完。
 
 完整流水线顺序：11 组最终 GPU 验收（含双本体各 23 点重测）→ 独立开发条件上的真实 source/target/0/5/20 配对 smoke → 各本体 100 回合吞吐/P95 → 冻结 → 两个 learner、两方向、三完整 seed、每格 50 配对条件 → 独立审计与中英文报告、可再生成图表。默认未去重正式配额 5,640 回合，按别名减少真实执行。发布 tag 前仍需完成最终结果审查、清洁 checkout 复现和固定采样可视化。
+
+流水线已实际启动于 `runs/complete-v2-20261023/`，使用 GPU 0/1。启动时阶段为 `GPU_ACCEPTANCE_RUNNING`，两个名义验收子进程已运行；这不是正式 pilot 已完成的声明。实时状态在该目录的 `pipeline_status.json`，总日志为同级 `runs/complete-v2-20261023.log`。该监督进程独立于聊天会话，验收失败会停止后续正式启动；通过后依序运行 smoke、吞吐、冻结与完整矩阵。代码 `6957b63`、清洁源码验证 `01a6c36` 对应的 GitHub CPU CI 均已成功。

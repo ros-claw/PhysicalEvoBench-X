@@ -57,3 +57,15 @@ ACCEPT_EULA=Y PEBX_GPU=1 scripts/run_native.sh acquire --embodiment franka_panda
 双向矩阵脚本、私有条件、阶段 checkpoint、物理/提案 journal、随机状态恢复和锁已实现。完整默认计划是 12 个独立学习包、5,640 个逻辑回合，**计划不等于已执行结果**。正常已完成阶段可续跑；不确定的在途调用停止而不静默重试。CPU 测试已覆盖完整预算/alias/续跑链，当前 73 项通过，未代替 GPU 验收。操作见 `docs/pilot_execution.md`。
 
 正式冻结和 pilot 仍未通过；只读缺口清单在 `evidence/freeze_readiness.json`。继续完成范围检查、最终配置/依赖采用、匹配最终代码 hash 的 GPU 验收，再启动完整矩阵。
+
+### 最终门控流水线（2026-10-23）
+
+首轮 v2 范围结果：Panda 21/23、Robotiq 23/23。所有测点到达任务条件或抬升参考终点，参考速度均有界；不是连续空间安全证明，不是正式性能结果。新范围已在两个 learner 与 schema 中统一，旧 v1 范围仅用于历史产物。
+
+最终配置显式设置 articulation root 与 rigid links 的 64/4 solver。两个本体各一次真实名义检查成功，原生读回了完整关节限位/驱动增益；见 `evidence/gpu/effective_embodiment_parameters_v2.json`。这些单次检查不替代新一轮完整验收，旧 46 回合不改标。
+
+依赖/资产审查已采用到锁文件。配置以 `development_validation_mode=evidence_gate` 预声明验收路径，保持源配置 `development_validated=false`；只有真实新验收通过后，冻结器生成派生的验证通过清单。当前缺口清单仍为 NOT_READY，不发布提前通过的冻结或 tag。
+
+CLI 已补齐 `evaluate`、完整流水线 `run`、中英文 `report`（可选 SVG/PDF 图）。矩阵、私有 split、fresh proposer、真实别名、完整成本、随机状态恢复、原始证据 hash 和独立审计均实现。测试还覆盖一侧 infra 时另一侧原尝试不进入成功率、但成本完整保留的情形。当前 CPU 测试 84 项；阶段功能实现不等于正式矩阵已测完。
+
+完整流水线顺序：11 组最终 GPU 验收（含双本体各 23 点重测）→ 独立开发条件上的真实 source/target/0/5/20 配对 smoke → 各本体 100 回合吞吐/P95 → 冻结 → 两个 learner、两方向、三完整 seed、每格 50 配对条件 → 独立审计与中英文报告、可再生成图表。默认未去重正式配额 5,640 回合，按别名减少真实执行。发布 tag 前仍需完成最终结果审查、清洁 checkout 复现和固定采样可视化。

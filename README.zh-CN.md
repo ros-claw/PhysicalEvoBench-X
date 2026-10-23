@@ -15,11 +15,13 @@ source .venv312/bin/activate
 pytest -q
 pebx --help
 pebx doctor --sim
-pebx skill-check examples/skills/initial_v1.json
+pebx skill-check examples/skills/initial_v2.json
 ```
 
 `doctor` 的退出码 2 表示仿真环境不就绪，详情写入 `evidence/doctor.json`。容器安装和运行入口见 [英文 README](README.md)，当前阶段和阻断证据见 [实施状态](docs/status.md)。
 
-下一道关卡是固定环境真实 reset/step，随后验证双夹爪开闭、TCP 轴向、名义抓取、质量写入与参数敏感性。完成后才能冻结分布和进入双向 pilot。未实现的正式批次编排、完整验收和报告功能有明确记录，不会生成占位成功率。
+已实现最终验收、双向批次、阶段续跑和独立报告审计；这些工程功能须先经过当前物理修订的最终验收，再冻结并运行完整 pilot，不会生成占位成功率。
 
-已验证的原生安装与命令见 [原生运行环境](docs/native_runtime.md)，真实模型配置和用量见 [Kimi K3 接入](docs/kimi_k3.md)。当前 CPU 契约测试为 65 项，CPU 与仿真环境均通过。
+已验证的原生安装与命令见 [原生运行环境](docs/native_runtime.md)，真实模型配置和用量见 [Kimi K3 接入](docs/kimi_k3.md)。当前 CPU 契约测试为 84 项，CPU 与仿真环境均通过。
+
+2026-10-23 更新：v2 的 46 个开发范围测点已完成（Panda 21/23，Robotiq 23/23），失败全部保留。最终配置同时显式设置 root/link solver，仍需重新验收。`pebx run` 已接入最终验收、工程闭环 smoke、每本体 100 回合吞吐、冻结和完整双向 pilot；`pebx evaluate`、`pebx report` 也已接入。详见 [运行与续跑](docs/pilot_execution.md)。正式实验是否完成以独立审计和真实结果为准。

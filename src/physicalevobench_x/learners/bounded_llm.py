@@ -5,9 +5,10 @@ Provider endpoint/model are explicit configuration, not inferred defaults.
 import json
 import os
 import time
+from datetime import datetime, timezone
 import urllib.request
 import urllib.error
-from ..core.schemas import SkillSpec, BOUNDS
+from ..core.schemas import SkillSpec, bounds_for
 from ..core.hashing import digest, append_json, canonical
 
 PROMPT = ('Propose one complete SkillSpec JSON object for StableLift. Lift a free cuboid by 0.08 m '
@@ -42,11 +43,13 @@ class BoundedLLM:
 
     def propose(self, incumbent, history):
         # Conservative UTF-8 byte bound: <= 6000 tokens for byte-based BPE.
-        messages = [{'role': 'system', 'content': PROMPT + canonical(BOUNDS)}]
+        messages = [{'role': 'system', 'content': PROMPT + canonical(bounds_for(incumbent))}]
+        schema = SkillSpec.model_json_schema()
+        schema['properties']['controller_family'] = {'const': incumbent.controller_family}
         history = list(history)
         while True:
             content = canonical(dict(incumbent=incumbent.model_dump(), history=history,
-                                     schema=SkillSpec.model_json_schema()))
+                                     schema=schema))
             if len((messages[0]['content']+content).encode()) <= 5800:
                 break
             if not history:
@@ -59,8 +62,10 @@ class BoundedLLM:
             if self.reasoning_effort is not None:
                 payload['reasoning_effort'] = self.reasoning_effort
             start = time.monotonic()
+            requested_at_utc=datetime.now(timezone.utc).isoformat()
             response, raw, candidate = None, None, None
             error = None
+            http_status = None
             try:
                 response = self.transport(payload)
                 raw = response['choices'][0]['message']['content']
@@ -71,9 +76,13 @@ class BoundedLLM:
                 return candidate
             except (ValueError, KeyError, IndexError, OSError, TimeoutError) as exc:
                 error = type(exc).__name__
+                http_status = getattr(exc,'code',None)
                 errors.append(error)
             finally:
                 log = dict(model=self.model, temperature=self.temperature, response_model=(response or {}).get("model"), reasoning_effort=self.reasoning_effort, endpoint=self.endpoint, seed_requested=False,
+                    requested_at_utc=requested_at_utc,response_id=(response or {}).get('id'),
+                    provider_created=(response or {}).get('created'),immutable_model_revision=None,
+                    http_status=http_status,
                     rng_seed=self.seed, attempt=attempt, prompt_hash=digest(messages),
                     prompt=messages, response_text=raw, usage=(response or {}).get('usage'),
                     wall_time_s=time.monotonic()-start, error=error,

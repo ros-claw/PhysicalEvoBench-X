@@ -1,9 +1,18 @@
 task_id: PEBX-StableLift-v0
-status: DEVELOPMENT_UNVALIDATED
-object_size_m: [0.045, 0.045, 0.065]
-mass_kg: [0.10, 0.50]
-offset_xy_m: [-0.03, 0.03]
-yaw_rad: [-0.1745329252, 0.1745329252]
+status: PENDING_FINAL_ROOT_AND_LINK_SOLVER_ACCEPTANCE
+object_size_m:
+- 0.045
+- 0.045
+- 0.065
+mass_kg:
+- 0.1
+- 0.5
+offset_xy_m:
+- -0.03
+- 0.03
+yaw_rad:
+- -0.1745329252
+- 0.1745329252
 physics_dt_s: 0.005
 control_dt_s: 0.02
 settle_s: 0.5
@@ -14,3 +23,113 @@ position_drift_m: 0.015
 rotation_drift_rad: 0.2617993877991494
 linear_speed_mps: 0.03
 angular_speed_radps: 0.5
+development_validated: false
+controller_family: grasp_lift_state_v2
+parameter_bounds:
+  grasp_height_fraction:
+  - 0.45
+  - 0.75
+  pregrasp_clearance_m:
+  - 0.07
+  - 0.12
+  settle_time_s:
+  - 0.1
+  - 0.5
+  lift_vmax_mps:
+  - 0.03
+  - 0.1
+  lift_amax_mps2:
+  - 0.1
+  - 0.8
+development_validation_evidence:
+  franka_panda: evidence/sensitivity/franka_panda/final_common_range_review.json
+  franka_robotiq: evidence/sensitivity/franka_robotiq/final_common_range_review.json
+development_validation_mode: evidence_gate
+scene_revision: common_root_and_link_solver_v1
+gpu_evidence:
+  franka_panda_nominal: evidence/final_acceptance_v2/franka_panda_nominal.json
+  franka_robotiq_nominal: evidence/final_acceptance_v2/franka_robotiq_nominal.json
+  tcp_axes: evidence/final_acceptance_v2/tcp_axes.json
+  gripper_motion: evidence/final_acceptance_v2/gripper_motion.json
+  mass_readback: evidence/final_acceptance_v2/mass_readback.json
+  mass_impulse: evidence/final_acceptance_v2/mass_impulse.json
+  reset_isolation: evidence/final_acceptance_v2/reset_isolation.json
+  judge_adversarial: evidence/final_acceptance_v2/judge_adversarial.json
+  parameter_sensitivity: evidence/final_acceptance_v2/parameter_sensitivity.json
+  paired_replay: evidence/final_acceptance_v2/paired_replay.json
+freeze_files:
+- configs/development/common_range_candidate.yaml
+- configs/embodiments/franka_panda.yaml
+- configs/embodiments/franka_robotiq.yaml
+- configs/experiments/smoke.yaml
+- configs/learners/kimi_k3.yaml
+- configs/tasks/stable_lift_dev.yaml
+- dependencies.lock.yaml
+- docs/dependency_review.md
+- docs/protocol_v0.1.md
+- evidence/gpu/effective_embodiment_parameters_v2.json
+- evidence/gpu/embodiment_diff.json
+- evidence/native/asset_inventory_complete.json
+- evidence/native/dependency_review.json
+- evidence/native/runtime_snapshot.json
+- examples/skills/initial_v2.json
+- pyproject.toml
+- schemas/skillspec.schema.json
+- scripts/analyze_common_range.py
+- scripts/attest_acceptance.py
+- scripts/audit_suite.py
+- scripts/check_adversarial_judge.py
+- scripts/check_common_range.py
+- scripts/check_freeze_readiness.py
+- scripts/check_paired_replay.py
+- scripts/complete_pipeline.py
+- scripts/diagnose_sensitivity.py
+- scripts/inventory_assets.py
+- scripts/measure_throughput.py
+- scripts/pilot_suite.py
+- scripts/pilot_support.py
+- scripts/plot_report.py
+- scripts/run_sensitivity.py
+- scripts/run_suite.py
+- scripts/summarize_development.py
+- scripts/summarize_pilot.py
+- src/physicalevobench_x/__init__.py
+- src/physicalevobench_x/cli.py
+- src/physicalevobench_x/control/__init__.py
+- src/physicalevobench_x/control/adapter.py
+- src/physicalevobench_x/control/geometry.py
+- src/physicalevobench_x/control/grasp_lift_executor.py
+- src/physicalevobench_x/control/trajectory.py
+- src/physicalevobench_x/core/__init__.py
+- src/physicalevobench_x/core/aliasing.py
+- src/physicalevobench_x/core/budget.py
+- src/physicalevobench_x/core/conditions.py
+- src/physicalevobench_x/core/freeze.py
+- src/physicalevobench_x/core/hashing.py
+- src/physicalevobench_x/core/schemas.py
+- src/physicalevobench_x/core/selection.py
+- src/physicalevobench_x/dev_evaluate.py
+- src/physicalevobench_x/learners/__init__.py
+- src/physicalevobench_x/learners/bounded_llm.py
+- src/physicalevobench_x/learners/factory.py
+- src/physicalevobench_x/learners/random_search.py
+- src/physicalevobench_x/protocol/__init__.py
+- src/physicalevobench_x/protocol/evaluation.py
+- src/physicalevobench_x/protocol/learning.py
+- src/physicalevobench_x/protocol/orchestration.py
+- src/physicalevobench_x/protocol/paired.py
+- src/physicalevobench_x/reporting/__init__.py
+- src/physicalevobench_x/reporting/calibration.py
+- src/physicalevobench_x/reporting/validation.py
+- src/physicalevobench_x/sim/__init__.py
+- src/physicalevobench_x/sim/arena_factory.py
+- src/physicalevobench_x/sim/calibration.py
+- src/physicalevobench_x/sim/commands.py
+- src/physicalevobench_x/sim/configuration.py
+- src/physicalevobench_x/sim/doctor.py
+- src/physicalevobench_x/sim/dynamics.py
+- src/physicalevobench_x/sim/judge.py
+- src/physicalevobench_x/sim/launch.py
+- src/physicalevobench_x/sim/runner.py
+- src/physicalevobench_x/sim/stable_lift_task.py
+- src/physicalevobench_x/sim/state_reader.py

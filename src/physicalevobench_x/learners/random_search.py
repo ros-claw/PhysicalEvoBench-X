@@ -1,5 +1,5 @@
 import random
-from ..core.schemas import BOUNDS, SkillSpec
+from ..core.schemas import bounds_for, SkillSpec
 
 
 class RandomSearch:
@@ -11,7 +11,7 @@ class RandomSearch:
 
     def propose(self, incumbent, history):
         raw, parameters = {}, {}
-        for key, (lo, hi) in BOUNDS.items():
+        for key, (lo, hi) in bounds_for(incumbent).items():
             x = (getattr(incumbent.parameters, key)-lo)/(hi-lo)
             raw[key] = x + self.rng.gauss(0, .2)
             y = raw[key] % 2

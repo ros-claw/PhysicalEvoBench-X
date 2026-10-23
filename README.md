@@ -4,7 +4,7 @@ Measuring whether newly acquired robot experience improves another embodiment un
 
 The v0.1 track compares Franka/Panda Hand and Franka/Robotiq 2F-85 using a shared state-based StableLift executor. It measures the marginal effect of **SourceAfter versus SourceBefore**, under independent target budgets of 0, 5 and 20 episodes. This is near-embodiment parameter transfer, not a claim of arbitrary robot generalization.
 
-**Current status: pinned native runtime, both-body reset/step and 10 nominal StableLift successes per body are GPU verified.** A real 20-episode source run and 0/5-budget paired development bridge are complete; formal transfer experiments are not complete. The real Kimi K3 proposer is connected. See [implementation status](docs/status.md) and [中文说明](README.zh-CN.md).
+**Current status: native runtime and historical nominal checks are GPU verified; 46 v2 development range episodes are complete (Panda 21/23, Robotiq 23/23).** A real 20-episode source run and 0/5-budget paired development bridge are complete; formal transfer experiments are not complete. The real Kimi K3 proposer is connected. See [implementation status](docs/status.md) and [中文说明](README.zh-CN.md).
 
 ## CPU development
 
@@ -14,7 +14,7 @@ source .venv/bin/activate
 pip install -r requirements-cpu.lock.txt
 pytest -q
 pebx --help
-pebx skill-check examples/skills/initial_v1.json
+pebx skill-check examples/skills/initial_v2.json
 pebx doctor
 ```
 
@@ -44,16 +44,22 @@ These container build and simulation commands are implementation entry points **
 - `skill-check`: strict complete five-dimensional SkillSpec validation.
 - `generate-conditions`: deterministic private **development** manifests; never a frozen test split.
 - `smoke`, `acquire`, `adapt`: real PhysX development entry points, gated on runtime availability. Acquire uses 12 exploration + 8 validation episodes; adapt uses fresh 0/5/20 budgets.
-- `freeze`: refuses unvalidated development configurations, absent local digest, missing physical evidence or stale hashes.
+- `freeze`: refuses unvalidated development configurations, missing native/container provenance, unresolved assets, missing physical evidence or stale hashes.
 - `reconstruct`: rebuilds the selection and final artifact from candidate and episode logs.
 - `validate-run`: checks evidence schemas, dependencies, trajectories and accounting; rejects fake records. It does not yet certify a complete formal pilot matrix.
 
 Python modules additionally implement paired evaluation with both-side retries, target adaptation aliases, random proposals, a bounded OpenAI-compatible LLM transport, canonical SE(3) action encoding, an acceleration-limited executor and the authoritative stable-hold judge. A real Kimi K3 request has been validated; see [configuration and measured usage](docs/kimi_k3.md).
 
-`calibrate`, `dynamics-check` and `llm-probe` are also available. `evaluate`, `run` and `report` are not yet exposed as CLI commands. Complete P1/P2 physical acceptance before freezing or running a pilot. The development runner creates a new environment per episode to isolate dynamics; throughput and reset correctness still require GPU checks.
+`calibrate`, `dynamics-check`, `llm-probe`, `evaluate`, `run` and `report` are available. The [full pipeline](docs/pilot_execution.md) gates engineering smoke, 100-episode per-body timing and the 12-package pilot on final GPU acceptance and immutable freeze evidence. Completed work can be resumed from physical/proposal journals; ambiguous in-flight work stops for reconciliation. Reports preserve all learning-run points and source rollbacks. The final root/link solver revision is awaiting its complete acceptance batch; no formal result is claimed.
 
 ## Evidence and protocol
 
 [Protocol](docs/protocol_v0.1.md), [full task specification](docs/implementation_plan.md), [reproduction](docs/reproduction.md), [upstream audit](docs/upstream_audit.md), [limitations](docs/limitations.md).
 
 Fake runners exist only in tests and every fake result is labeled. CPU tests verify contracts and protocol logic; they do not validate contacts, reachability, dynamics, or physical grasp success. Negative or zero transfer is a valid research outcome.
+
+```bash
+ACCEPT_EULA=Y pebx run --config configs/tasks/stable_lift_dev.yaml --output runs/complete-NEW --gpus 0 1
+# After completion; use the native interpreter or install .[report] for --plots.
+pebx report --run-dir runs/complete-NEW/pilot --verified-audit --plots
+```

@@ -388,3 +388,23 @@ runs/<run_id>/
 
 ---
 
+
+## 2026-10-23 开发修订：执行器 v2 与最终验收
+
+正式测试尚未启动。保留原 v1 产物及其开发记录；默认新产物使用 `grasp_lift_state_v2`。v2 接续最后请求位置，消除阶段边界参考跳变；抬升终点仍由进入 LIFT 的实测 TCP + 0.12 m 确定。五维初值和 judge 阈值均未降低。
+
+| v2 参数 | 统一待最终验收范围 |
+|---|---|
+| grasp_height_fraction | 0.45–0.75 |
+| pregrasp_clearance_m | 0.07–0.12 m |
+| settle_time_s | 0.10–0.50 s |
+| lift_vmax_mps | 0.03–0.10 m/s |
+| lift_amax_mps2 | 0.10–0.80 m/s² |
+
+收窄依据为独立开发测量中的机械到位失败、速度饱和和稳定性诊断，不是正式测试结果。第一轮 v2 范围检查各 23 个测点，Panda 21 成功/2 稳定性失败，Robotiq 23 成功；全部到达任务条件或完成抬升参考，抬升参考速度均有界。这是有限开发覆盖，不能证明连续五维空间处处成功。
+
+最终场景修订显式统一 articulation root 与 rigid links 的 solver 设置为 64 position / 4 velocity iterations。两个层级分别记录；不把上游 root 默认值当作已统一。此修订需要新一轮双本体 23 点范围、名义、标定、动力学、反例和重放验收；旧记录不改标。
+
+配置保持 `development_validated=false` 与 `development_validation_mode=evidence_gate`，预先声明所需证据路径。冻结程序仅在真实证据逐项通过、原始校验和一致时，生成 `development_validated=true` 的派生冻结清单；不提前手动设置通过标记，也不修改预注册配置来配合结果。
+
+工程 smoke 与正式 pilot 使用不同的条件种子命名空间；同一命名空间内仍按 split 分离。v0.1 正式配额不变，默认 Random→Random 与 Kimi→Kimi 两个完整系统，各方向三个独立 source/target 学习包。

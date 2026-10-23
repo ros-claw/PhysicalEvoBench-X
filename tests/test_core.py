@@ -56,3 +56,23 @@ def test_alias_context_and_seed_are_part_of_identity():
     assert identity == adaptation_identity(SkillSpec.initial(), **kw)
     for key, value in [('run_seed_id',2),('budget',20),('public_context',{'hint':True}),('rng_seed',21)]:
         assert identity != adaptation_identity(SkillSpec.initial(), **(kw | {key:value}))
+
+
+@pytest.mark.parametrize('field,value', [('grasp_height_fraction',.25),('pregrasp_clearance_m',.04),('settle_time_s',.8),('lift_vmax_mps',.2)])
+def test_legacy_bounds_are_preserved_without_weakening_v2(field,value):
+    data=SkillSpec.initial().model_dump()
+    data['parameters'][field]=value
+    with pytest.raises(ValidationError,match='version bounds'):
+        SkillSpec.model_validate(data)
+    data['controller_family']='grasp_lift_state_v1'
+    assert getattr(SkillSpec.model_validate(data).parameters,field)==value
+
+
+def test_private_condition_contract_rejects_ignored_physics_fields():
+    from physicalevobench_x.core.conditions import validate_condition
+    initial=generate(1,dict(dev=1))['dev'][0]
+    assert validate_condition(initial)==initial
+    for patch in ({'mass_kg':float('nan')},{'initial_velocity':[1.]*6}, {'size_m':[.1]*3},
+                  {'offset_xy_m':[.1,0.]},{'hidden_extra':True}):
+        with pytest.raises(ValueError):
+            validate_condition(initial|patch)

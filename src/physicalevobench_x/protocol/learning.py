@@ -44,8 +44,13 @@ def learn(initial, budget, train, validation, proposer_factory, seed, runner, ou
             for attempt in range(2):
                 r = runner.run(skill=skill, condition=condition, phase=phase,
                                candidate_index=index, attempt_index=attempt)
-                if (r.condition_id != condition['condition_id'] or r.skill_hash != skill.semantic_hash
+                if (r.condition_id != condition['condition_id'] or r.split != condition['split'] or r.skill_hash != skill.semantic_hash
                     or r.phase != phase or r.candidate_index != index or r.attempt_index != attempt):
+                    write_json(output/'protocol_error.json',dict(reason='RESULT_IDENTITY_MISMATCH',result=r.model_dump()))
+                    invalid=r.model_copy(update={'infra_failure':'RESULT_IDENTITY_MISMATCH'})
+                    ledger.record(invalid)
+                    append_json(output/'episode_results.jsonl',invalid)
+                    write_json(output/'costs.json',ledger.snapshot())
                     raise ValueError('Runner returned mismatched identity')
                 ledger.record(r)
                 append_json(output/'episode_results.jsonl', r)
@@ -96,18 +101,45 @@ def learn(initial, budget, train, validation, proposer_factory, seed, runner, ou
 def reconstruct(path):
     import json
     path = Path(path)
-    candidates = [SkillSpec.model_validate(json.loads(line)['skill'])
-                  for line in (path/'candidates.jsonl').read_text().splitlines()]
+    before = SkillSpec.model_validate_json((path/'before.json').read_text())
+    expected = SkillSpec.model_validate_json((path/'after.json').read_text())
+    costs = json.loads((path/'costs.json').read_text())
+    if not (path/'candidates.jsonl').exists():
+        if costs['budget_charged_episodes'] != 0 or before != expected:
+            raise ValueError('Invalid zero-budget reconstruction')
+        return dict(skill=before.model_dump(),selected_index=0,accepted_update=False,reason='ZERO_BUDGET')
+    candidate_rows = [json.loads(line) for line in (path/'candidates.jsonl').read_text().splitlines()]
+    if [r['candidate_index'] for r in candidate_rows] != list(range(len(candidate_rows))):
+        raise ValueError('Invalid candidate index sequence')
+    candidates = [SkillSpec.model_validate(row['skill']) for row in candidate_rows]
+    if candidates[0] != before:
+        raise ValueError('Original before artifact mismatch')
+    if any(c.controller_family != before.controller_family for c in candidates):
+        raise ValueError('Candidate changed fixed controller')
     records = [EpisodeResult.model_validate_json(line) for line in (path/'episode_results.jsonl').read_text().splitlines()]
     valid = [r for r in records if not r.infra_failure]
     groups = [[r for r in valid if r.phase == 'exploration' and r.candidate_index == i] for i in range(len(candidates))]
     if len(candidates) not in (3, 6) or any(len(g) != (1 if len(candidates)==3 else 2) for g in groups):
         raise ValueError('Incomplete exploration log')
+    train_ids = [r.condition_id for r in groups[0]]
+    if len(set(train_ids)) != len(train_ids) or any([r.condition_id for r in group] != train_ids for group in groups):
+        raise ValueError('Exploration condition pairing mismatch')
     selected = select(groups)
     vals = [r for r in valid if r.phase == 'validation']
     n = 1 if len(candidates)==3 else 4
     if len(vals) != 2*n:
         raise ValueError('Incomplete validation log')
+    validation_ids = [r.condition_id for r in vals[:n]]
+    if (len(set(validation_ids)) != n or [r.condition_id for r in vals[n:]] != validation_ids
+        or set(train_ids) & set(validation_ids)):
+        raise ValueError('Validation condition pairing/overlap mismatch')
+    if (len({r.episode_id for r in records}) != len(records)
+        or len(valid) != (5 if n==1 else 20)
+        or costs['physical_episode_executions'] != len(records)
+        or costs['budget_charged_episodes'] != len(valid)
+        or costs['infra_retries'] > 2
+        or abs(costs['sim_time_s']-sum(r.sim_time_s for r in records)) > 1e-6):
+        raise ValueError('Execution/cost ledger mismatch')
     for i, group in enumerate(groups):
         if any(r.skill_hash != candidates[i].semantic_hash for r in group):
             raise ValueError('Candidate hash mismatch')
@@ -115,7 +147,6 @@ def reconstruct(path):
         raise ValueError('Validation hash mismatch')
     accepted, reason = accept(candidates[0], candidates[selected], vals[:n], vals[n:])
     result = candidates[selected] if accepted else candidates[0]
-    expected = SkillSpec.model_validate_json((path/'after.json').read_text())
     if result.semantic_hash != expected.semantic_hash:
         raise ValueError('Reconstruction mismatch')
     return dict(skill=result.model_dump(), selected_index=selected, accepted_update=accepted, reason=reason)

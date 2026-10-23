@@ -30,3 +30,5 @@ Each candidate permits one generation plus at most one repair; failures fall bac
 Official references: [model IDs, context and protocol URLs](https://www.kimi.com/code/docs/kimi-code/models.html), [API endpoints](https://www.kimi.com/code/docs/). Authenticated response/proposal evidence is in `evidence/llm/kimi_k3/`.
 
 A real 5-episode Robotiq adaptation subsequently completed (3 exploration + 2 validation). Its two candidate proposals used three HTTP requests total: the first output had Markdown fences, was rejected as non-JSON, and was repaired within the one-repair allowance. All three calls together used 3,449 provider-reported tokens. The selector retained the initial artifact (`NO_BEHAVIOR_CHANGE`); deterministic reconstruction passed. This validates the feedback/proposal/budget chain without claiming a useful learned update. See `physical_adaptation_*` evidence.
+
+2026-10-23 的 v2 实际探测：原始响应含 Markdown 围栏，严格解析失败；协议允许的一次修复返回合法 `grasp_lift_state_v2` 和新范围内的完整五维参数。两次请求分别耗时约 6.89/8.36 秒，总用量 2,132 token（1,657 输入、475 输出，205 reasoning 为输出子集）。证据在 `evidence/llm/kimi_k3/v2/`。这只验证服务和参数契约，不声称该提案改善物理性能。后续调用增加 UTC、响应 ID/created 和 HTTP 状态记录；不可变权重 revision 仍不可用。

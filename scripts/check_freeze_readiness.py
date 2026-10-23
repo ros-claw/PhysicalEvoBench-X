@@ -11,7 +11,12 @@ def inspect(root, config):
     cfg = yaml.safe_load(config.read_text())
     lock = yaml.safe_load((root/'dependencies.lock.yaml').read_text())
     gaps, evidence = [], {}
-    if not cfg.get('development_validated'):
+    reviewed=bool(cfg.get('development_validated'))
+    if cfg.get('development_validation_mode')=='evidence_gate':
+        paths=cfg.get('development_validation_evidence',{})
+        reviewed=len(paths)==2 and all((root/name).is_file() and
+            json.loads((root/name).read_text()).get('all_measured_cases_mechanically_executable') for name in paths.values())
+    if not reviewed:
         gaps.append('Task distribution / parameter bounds not development-validated')
     if not lock.get('native',{}).get('dependency_metadata_reviewed'):
         gaps.append('Dependency review not yet adopted into lock')

@@ -20,13 +20,17 @@ physics:
   decimation: 4
   control_dt_s: 0.02
 assets:
-  verified: false
+  verified: true
   checksums: {}
+  inventory_path: evidence/native/asset_inventory_complete.json
+  inventory_sha256: 0a19e71eb3469aed0dc6bf077fc86a3d69195fafddd8a872fe6bfa03495625c5
 installation_method: native_uv
 native:
   uv_lock_path: third_party/IsaacLab-Arena/uv.lock
   uv_lock_sha256: 485a01f6514d19fa066572033d76ceebcdd81c0813d7356919b4b19cd063d43d
   runtime_snapshot_path: evidence/native/runtime_snapshot.json
   runtime_snapshot_sha256: ab86dea7ce47fa56697e6b72bfd743cacef9e1add2a5ec9fdd64f44a78292de8
-  dependency_metadata_reviewed: false
+  dependency_metadata_reviewed: true
   dependency_metadata_report: evidence/native/package_check.log
+  dependency_review_path: evidence/native/dependency_review.json
+  dependency_review_sha256: adad5d0842ae5b53b81e1f4e651d8a77f6586263e58287225b49885788da2468

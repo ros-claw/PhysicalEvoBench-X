@@ -24,6 +24,24 @@ def execute(args):
         if args.command=='dynamics-check':
             from .dynamics import dynamics_check
             return dynamics_check(args.embodiment,output)
+        if args.command=='evaluate':
+            import json
+            from ..protocol.evaluation import evaluate
+            from ..core.conditions import validate_condition
+            skill=SkillSpec.model_validate_json(args.skill.read_text())
+            manifest=json.loads(args.conditions.read_text())
+            conditions=manifest[args.split] if isinstance(manifest,dict) else manifest
+            if not conditions or any(c['split']!=args.split for c in conditions):
+                raise ValueError('Selected held-out manifest split mismatch')
+            for condition in conditions:
+                validate_condition(condition)
+            output.mkdir(parents=True)
+            runner=PhysXRunner(args.embodiment,output/'trajectories')
+            records=evaluate(skill,conditions,runner,output/'episode_results.jsonl')
+            summary=dict(status='EVALUATION_COMPLETE',backend='physx',episodes=len(records),
+                successes=sum(r.task_success for r in records),skill_hash=skill.semantic_hash,formal_result_eligible=False)
+            write_json(output/'summary.json',summary)
+            return summary
         initial=SkillSpec.initial()
         if args.command=='smoke':
             output.mkdir(parents=True)

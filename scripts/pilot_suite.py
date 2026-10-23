@@ -7,8 +7,9 @@ import argparse
 import json
 import os
 import time
+import subprocess
 from pathlib import Path
-from physicalevobench_x.core.hashing import digest, file_digest, write_json
+from physicalevobench_x.core.hashing import digest, file_digest, write_json, append_json
 from physicalevobench_x.core.conditions import generate
 from physicalevobench_x.core.schemas import SkillSpec
 from pilot_support import ReplayJournal, ReplayRunner, replay_factory, atomic_json
@@ -23,11 +24,19 @@ def execution_inputs(root):
     return {str(p.relative_to(root)): file_digest(p) for p in sorted(paths)}
 
 
-def plan(output, root, freeze=None, seeds=3, test_count=50, learners=LEARNERS):
-    if seeds < 1 or test_count < 1 or not set(learners) <= set(LEARNERS):
+def plan(output, root, freeze=None, seeds=3, test_count=50, learners=LEARNERS, sources=BODIES):
+    if seeds < 1 or test_count < 1 or not set(learners) <= set(LEARNERS) or not set(sources)<=set(BODIES):
         raise ValueError('Invalid experiment dimensions')
     inputs = execution_inputs(root)
+    try:
+        repo_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True,stderr=subprocess.DEVNULL).strip()
+    except subprocess.CalledProcessError:
+        repo_commit=None
     if freeze:
+        if seeds!=3 or test_count!=50 or set(learners)!=set(LEARNERS) or set(sources)!=set(BODIES):
+            raise ValueError('Formal pilot requires both learners/directions, three seeds and 50 tests')
+        if repo_commit is None:
+            raise ValueError('Formal execution requires a committed Git checkout')
         frozen = json.loads(freeze.read_text())
         contents = {k: v for k, v in frozen.items() if k != 'freeze_hash'}
         if (digest(contents) != frozen.get('freeze_hash')
@@ -38,6 +47,9 @@ def plan(output, root, freeze=None, seeds=3, test_count=50, learners=LEARNERS):
             if file_digest(root/name) != checksum:
                 raise ValueError('Freeze input mismatch: '+name)
         freeze_hash = frozen['freeze_hash']
+        tracked=set(subprocess.check_output(['git','ls-files'],cwd=root,text=True).splitlines())
+        if not set(inputs)<=tracked or subprocess.run(['git','diff','--quiet','HEAD','--',*inputs],cwd=root).returncode:
+            raise ValueError('Formal execution inputs must be committed and match the recorded revision')
     else:
         freeze_hash = None
     output.mkdir(parents=True, exist_ok=False)
@@ -45,13 +57,15 @@ def plan(output, root, freeze=None, seeds=3, test_count=50, learners=LEARNERS):
     private.mkdir(mode=0o700)
     packages = []
     for seed_id in range(seeds):
-        manifest = generate(10001+seed_id, dict(source_train=2, source_validation=4,
+        # Engineering held-out cases must never become the later formal tests.
+        condition_seed=(10001 if freeze else 90010001)+seed_id
+        manifest = generate(condition_seed, dict(source_train=2, source_validation=4,
             source_audit=test_count, target_train=2, target_validation=4, target_test=test_count))
         path = private/f'seed-{seed_id}.json'
         write_json(path, manifest)
         path.chmod(0o600)
         for learner in learners:
-            for source in BODIES:
+            for source in sources:
                 packages.append(dict(package_id=f'{learner}/{source}/seed-{seed_id}', learner=learner,
                     source=source, target=BODIES[1-BODIES.index(source)], run_seed_id=seed_id,
                     source_proposal_seed=30001+seed_id, target_proposal_seed=40001+seed_id,
@@ -59,6 +73,7 @@ def plan(output, root, freeze=None, seeds=3, test_count=50, learners=LEARNERS):
     data = dict(protocol='pebx_x_v0.1', track='frozen_pilot' if freeze else 'development_matrix',
         freeze_hash=freeze_hash, freeze_path=str(freeze.resolve()) if freeze else None,
         execution_inputs=inputs, test_count=test_count, budgets=[0,5,20], packages=packages,
+        repo_commit=repo_commit,initial_skill=SkillSpec.initial().model_dump(),
         logical_episode_requests=len(packages)*(20+50+8*test_count),
         formal_result_eligible=False, eligibility_note='Execution plus full evidence audit required')
     # Per package: source 20, target practice 2*(5+20), source audit 2*n, target tests 6*n.
@@ -106,8 +121,27 @@ def _worker(suite, package_id, root):
     conditions = json.loads(path.read_text())
     output = suite/'packages'/package_id
     output.mkdir(parents=True, exist_ok=True)
+    session_id=str(time.time_ns())
+    append_json(output/'worker_sessions.jsonl',dict(event='START',session_id=session_id,pid=os.getpid(),unix_s=time.time()))
     identity = dict(package=package, execution_inputs_hash=digest(data['execution_inputs']))
     initial = SkillSpec.initial()
+    if initial.model_dump()!=data['initial_skill']:
+        raise ValueError('Initial SkillSpec changed')
+    manifest=dict(protocol_version='pebx_x_v0.1',task_id='PEBX-StableLift-v0',backend='physx',
+        run_id=package_id,run_seed_id=package['run_seed_id'],repo_commit=data['repo_commit'],
+        donor_learner_id=package['learner'],receiver_learner_id=package['learner'],
+        source_body_id=package['source'],target_body_id=package['target'],target_budgets=data['budgets'],
+        source_budget_cap=20,source_budget_used=None,split_manifest_hash=package['conditions_sha256'],
+        task_definition_hash=file_digest(root/'configs/tasks/stable_lift_dev.yaml'),
+        controller_hash=file_digest(root/'src/physicalevobench_x/control/grasp_lift_executor.py'),
+        adapter_hash=file_digest(root/'src/physicalevobench_x/control/adapter.py'),
+        freeze_hash=data['freeze_hash'],isolation_level='process_allowlist',formal_result_eligible=False,status='RUNNING')
+    write_json(output/'run_manifest.json',manifest)
+    import yaml
+    write_json(output/'dependency_snapshot.json',json.loads((root/'evidence/native/runtime_snapshot.json').read_text()))
+    write_json(output/'embodiment_diff.json',json.loads((root/'evidence/gpu/embodiment_diff.json').read_text()))
+    (output/'protocol_snapshot.yaml').write_text(yaml.safe_dump(dict(protocol_version='pebx_x_v0.1',
+        protocol_sha256=file_digest(root/'docs/protocol_v0.1.md'),task=yaml.safe_load((root/'configs/tasks/stable_lift_dev.yaml').read_text()))))
     from isaaclab_arena.cli.isaaclab_arena_cli import get_isaaclab_arena_cli_parser
     from isaaclab_arena.utils.isaaclab_utils.simulation_app import SimulationAppContext
     with SimulationAppContext(get_isaaclab_arena_cli_parser().parse_args([])):
@@ -123,7 +157,8 @@ def _worker(suite, package_id, root):
                 runner = ReplayRunner(physical, PhysXRunner(body, output/'trajectories'/name))
                 factory = replay_factory(proposals, proposer_factory(package['learner'],
                     root/'configs/learners/kimi_k3.yaml', output/'model_calls'/f'{name}.jsonl'))
-                learn(skill,budget,train,val,factory,seed,runner,attempt)
+                frozen=learn(skill,budget,train,val,factory,seed,runner,attempt)
+                write_json(attempt/'frozen_output.json',frozen)
                 if budget:
                     write_json(attempt/'reconstruction.json', reconstruct(attempt))
             path = stage(output,name,identity,execute)
@@ -165,29 +200,57 @@ def _worker(suite, package_id, root):
             cells.append(cell)
         # Count only journaled physical executions, once, including completed retries.
         records = []
+        provenance=[]
         for entry in sorted((output/'stages').glob('*/journal/physical/[0-9]*.json')):
             record = json.loads(entry.read_text())
             if record['status'] != 'COMPLETE':
                 raise ValueError('Unresolved physical call')
             records.append(record['result'])
+            request,result=record['request'],record['result']
+            provenance.append(dict(run_id=package_id,direction=package['source']+'->'+package['target'],
+                stage=entry.parents[2].name,run_seed_id=package['run_seed_id'],episode_id=result['episode_id'],
+                repo_commit=data['repo_commit'],freeze_hash=data['freeze_hash'],
+                condition_id=result['condition_id'],reset_seed=request['condition']['reset_seed'],
+                split=result['split'],phase=result['phase'],candidate_id=result['candidate_index'],attempt_index=result['attempt_index'],
+                executed_behavior_hash=result['skill_hash'],input_artifact_hash=digest(request['skill']),
+                actual_execution=result['backend']=='physx' and result['simulator_steps']>0,alias_of=None))
         logical = 20+50+8*data['test_count']
         alias_count = sum(a['aliased_episode_requests'] for a in aliases)
         alias_count += data['test_count']*int(initial.semantic_hash==after.semantic_hash)
         alias_count += sum(c['pairs'] for c in cells if c['evaluation_aliased'])
         valid = sum(not r['infra_failure'] for r in records)
-        if logical != valid+alias_count:
+        excluded=set()
+        for checkpoint in (output/'stages').glob('*/complete.json'):
+            selected=Path(json.loads(checkpoint.read_text())['output'])
+            attempts=selected/'pair_attempts.jsonl'
+            if attempts.exists():
+                for line in attempts.read_text().splitlines():
+                    pair=json.loads(line)
+                    if not pair['included']:
+                        excluded.update(pair['episode_ids'])
+        excluded_valid=sum(not r['infra_failure'] and r['episode_id'] in excluded for r in records)
+        if logical != valid-excluded_valid+alias_count:
             raise ValueError('Logical/actual/alias accounting mismatch')
         costs = dict(logical_episode_requests=logical,physical_episode_executions=len(records),
             aliased_episode_requests=alias_count,budget_charged_episodes=sum(r['phase'] in ('exploration','validation')
                 and not r['infra_failure'] for r in records),
+            excluded_pair_episode_executions=len(excluded),excluded_valid_pair_episode_executions=excluded_valid,
             sim_time_s=sum(r['sim_time_s'] for r in records),wall_time_s=sum(r['wall_time_s'] for r in records),
             current_worker_wall_time_s=time.monotonic()-started,
             gpu_seconds_estimation='Episode wall time on one selected GPU; no exclusive utilization claim')
         write_json(output/'costs.json',costs)
         write_json(output/'aliases.json',aliases)
-        write_json(output/'summary.json',dict(package=package, source_selection=json.loads((source_dir/'selection.json').read_text()),
+        manifest.update(status='COMPLETE',source_budget_used=20)
+        write_json(output/'run_manifest.json',manifest)
+        (output/'episode_provenance.jsonl').write_text(''.join(json.dumps(row,sort_keys=True)+'\n' for row in provenance))
+        write_json(output/'source_lineage.json',dict(before_sha256=file_digest(source_dir/'before.json'),
+            after_sha256=file_digest(source_dir/'after.json'),selection_sha256=file_digest(source_dir/'selection.json'),
+            reconstruction_sha256=file_digest(source_dir/'reconstruction.json')))
+        atomic_json(output/'summary.json',dict(package=package, source_selection=json.loads((source_dir/'selection.json').read_text()),
             source_audit=json.loads((audit/'summary.json').read_text()), cells=cells,costs=costs,
             formal_result_eligible=False,track=data['track']))
+        append_json(output/'worker_sessions.jsonl',dict(event='COMPLETE',session_id=session_id,pid=os.getpid(),
+            wall_time_s=time.monotonic()-started,scope='Worker wall time through final write; app shutdown is measured by supervisor'))
 
 
 def worker(suite, package_id, root):
@@ -215,12 +278,13 @@ def main():
     s.add_argument('--seeds',type=int,default=3)
     s.add_argument('--test-count',type=int,default=50)
     s.add_argument('--learner',action='append',choices=LEARNERS)
+    s.add_argument('--source',action='append',choices=BODIES)
     s = sub.add_parser('worker')
     s.add_argument('--suite',type=Path,required=True)
     s.add_argument('--package',required=True)
     args = p.parse_args()
     if args.command == 'plan':
-        result = plan(args.output.resolve(),args.root.resolve(),args.freeze,args.seeds,args.test_count,args.learner or LEARNERS)
+        result = plan(args.output.resolve(),args.root.resolve(),args.freeze,args.seeds,args.test_count,args.learner or LEARNERS,args.source or BODIES)
         print(json.dumps(dict(packages=len(result['packages']),logical_episode_requests=result['logical_episode_requests'],
                               track=result['track'])))
     else:

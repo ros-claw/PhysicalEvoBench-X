@@ -64,11 +64,13 @@ def test_partial_resume_restores_proposal_rng_without_repeating_remote_calls(tmp
     assert proposer.propose(first, []) == second
 
 
-def test_complete_matrix_package_aliases_budgets_and_resumes_without_execution(tmp_path, monkeypatch):
+@pytest.mark.parametrize('changed_and_retry',[False,True])
+def test_complete_matrix_package_aliases_budgets_and_resumes_without_execution(tmp_path, monkeypatch,changed_and_retry):
     import argparse
     import sys
     import types
     from physicalevobench_x.core.schemas import EpisodeResult
+    from physicalevobench_x.core.schemas import SkillSpec
     from physicalevobench_x.core.hashing import digest
     monkeypatch.syspath_prepend(str(Path(__file__).parents[1]/'scripts'))
     import pilot_suite
@@ -85,8 +87,11 @@ def test_complete_matrix_package_aliases_budgets_and_resumes_without_execution(t
             trajectory.write_bytes(b'CPU protocol fixture only')
             return EpisodeResult(episode_id=episode_id, condition_id=condition['condition_id'],
                 split=condition['split'],phase=phase,candidate_index=candidate_index,
-                skill_hash=skill.semantic_hash,backend='fake',task_success=False,max_lift_m=0.,
-                completion_time_s=15.,hold_time_s=0.,termination_reason='FAKE',attempt_index=attempt_index,
+                skill_hash=skill.semantic_hash,backend='fake',task_success=changed_and_retry,max_lift_m=.12 if changed_and_retry else 0.,
+                completion_time_s=(10. if skill==SkillSpec.initial() else 8.) if changed_and_retry else 15.,
+                hold_time_s=1. if changed_and_retry else 0.,termination_reason='FAKE',attempt_index=attempt_index,
+                infra_failure='CPU_FIXTURE_INFRA' if changed_and_retry and phase=='evaluation'
+                    and sum(p=='evaluation' for _,p in calls)==1 else None,
                 simulator_steps=1,sim_time_s=.02,wall_time_s=.01,trajectory_path=str(trajectory),
                 trajectory_sha256=file_digest(trajectory))
     class Context:
@@ -113,10 +118,26 @@ def test_complete_matrix_package_aliases_budgets_and_resumes_without_execution(t
     pilot_suite.worker(suite,package,root)
     summary = json.loads((suite/'packages'/package/'summary.json').read_text())
     assert summary['formal_result_eligible'] is False
-    assert summary['costs']['physical_episode_executions'] == 53
-    assert summary['costs']['aliased_episode_requests'] == 33
-    assert summary['costs']['budget_charged_episodes'] == 45
+    actual_count=88 if changed_and_retry else 53
+    assert summary['costs']['physical_episode_executions'] == actual_count
+    assert summary['costs']['aliased_episode_requests'] == (0 if changed_and_retry else 33)
+    assert summary['costs']['budget_charged_episodes'] == (70 if changed_and_retry else 45)
+    assert summary['costs']['excluded_valid_pair_episode_executions'] == int(changed_and_retry)
     assert all(c['delta_new'] == 0 for c in summary['cells'])
-    assert len(calls) == 53
+    assert len(calls) == actual_count
     pilot_suite.worker(suite,package,root)
-    assert len(calls) == 53
+    assert len(calls) == actual_count
+
+
+def test_independent_audit_rejects_development_even_if_flag_is_forged(tmp_path,monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1]/'scripts'))
+    import pilot_suite
+    import audit_suite
+    root=Path(__file__).parents[1]
+    suite=tmp_path/'suite'
+    pilot_suite.plan(suite,root,seeds=1,test_count=2,learners=['random_search_v1'])
+    plan=json.loads((suite/'plan.json').read_text())
+    plan['formal_result_eligible']=True
+    (suite/'plan.json').write_text(json.dumps(plan))
+    with pytest.raises(ValueError,match='retrospectively'):
+        audit_suite.audit(suite,root)

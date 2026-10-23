@@ -7,16 +7,17 @@ from isaaclab_arena.tasks.task_base import TaskBase
 from isaaclab_arena.tasks.task_termination_cfg import TaskTerminationCfg
 from isaaclab_arena.progress_tracking.completion_criteria import CompletionCriteria
 from isaaclab_arena.metrics.success_rate import SuccessRateMetric
-from .judge import StableLiftJudge, robot_hard_failures
+from .judge import StableLiftJudge, JudgeConfig, robot_hard_failures
 from ..control.geometry import rotate
 import numpy as np
 
 
 class StableLiftTask(TaskBase):
-    def __init__(self, reader):
-        super().__init__(episode_length_s=15.5,task_description='Lift the free cuboid and hold it stably.')
+    def __init__(self, reader, judge_config=JudgeConfig(), settle_s=.5):
+        self.settle_s=settle_s
+        super().__init__(episode_length_s=settle_s+judge_config.timeout_s,task_description='Lift the free cuboid and hold it stably.')
         self.reader = reader
-        self.judge = StableLiftJudge()
+        self.judge = StableLiftJudge(judge_config)
         self.last_tick = None
         self.last_episode_step = -1
         self.ready = False
@@ -37,7 +38,7 @@ class StableLiftTask(TaskBase):
         return [SuccessRateMetric()]
 
     def get_termination_cfg(self):
-        return TaskTerminationCfg(timeout_s=15.5,
+        return TaskTerminationCfg(timeout_s=self.settle_s+self.judge.config.timeout_s,
             success=[CompletionCriteria(name='stable_lift',predicate_sequence=[task_success])],
             failures={'pebx_failure':TerminationTermCfg(func=task_failure,params={})})
 
@@ -51,7 +52,7 @@ class StableLiftTask(TaskBase):
         self.last_tick, self.last_episode_step = tick, step
         obs = self.reader.read(env,self.episode_id)
         self.current_observation = obs
-        if obs.sim_time_s < .5-1e-9:
+        if obs.sim_time_s < self.settle_s-1e-9:
             return None
         if not self.ready:
             self.judge.reset(obs)

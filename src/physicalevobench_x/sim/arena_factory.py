@@ -13,6 +13,7 @@ from isaaclab_arena.scene.scene import Scene
 from isaaclab_arena.utils.pose import Pose
 from .state_reader import StateReader
 from .stable_lift_task import StableLiftTask, terminal_record
+from .configuration import load_runtime
 
 
 @dataclass
@@ -31,23 +32,34 @@ class StableLiftEnvironment(ArenaEnvironmentFactory[StableLiftEnvironmentCfg]):
 
     def build(self, cfg):
         import math
+        task_config,body_config,judge_config=load_runtime(cfg.embodiment)
+        if any(abs(a-b)>1e-9 for a,b in zip(cfg.axis_mapping_xyzw,body_config['canonical_axis_mapping_xyzw'])):
+            raise ValueError('Requested TCP axes disagree with versioned embodiment configuration')
         names={'franka_panda':'franka_ik','franka_robotiq':'droid_differential_ik'}
-        embodiment=self.asset_registry.get_asset_by_name(names[cfg.embodiment])(enable_cameras=False)
+        if body_config['registry_name']!=names[cfg.embodiment]:
+            raise ValueError('Unsupported embodiment registry mapping')
+        embodiment=self.asset_registry.get_asset_by_name(body_config['registry_name'])(enable_cameras=False)
         # Explicit common ready arm pose, not Arena's high reaching pose.
-        arm = [0., -.569, 0., -2.810, 0., 3.037, .741]
+        arm = body_config['initial_arm_joint_positions_rad']
         fingers = [.04, .04] if cfg.embodiment == 'franka_panda' else [0.]*6
         embodiment.set_initial_joint_pose(arm + fingers)
         # One common contact solver budget for both configurations, frozen before learning.
-        embodiment.scene_config.robot.spawn.rigid_props.solver_position_iteration_count = 64
-        embodiment.scene_config.robot.spawn.rigid_props.solver_velocity_iteration_count = 4
+        solver=body_config['contact_solver']
+        embodiment.scene_config.robot.spawn.rigid_props.solver_position_iteration_count = solver['position_iterations']
+        embodiment.scene_config.robot.spawn.rigid_props.solver_velocity_iteration_count = solver['velocity_iterations']
+        # Articulation-root settings have their own upstream defaults. Set both
+        # root and link scopes explicitly; configuring links alone is ambiguous.
+        embodiment.scene_config.robot.spawn.articulation_props.solver_position_iteration_count = solver['position_iterations']
+        embodiment.scene_config.robot.spawn.articulation_props.solver_velocity_iteration_count = solver['velocity_iterations']
         embodiment.scene_config.robot.spawn.collision_props = sim_utils.CollisionPropertiesCfg(
-            contact_offset=.002, rest_offset=0.)
+            contact_offset=solver['contact_offset_m'], rest_offset=solver['rest_offset_m'])
         if cfg.embodiment == 'franka_panda':
             hand = embodiment.scene_config.robot.actuators['panda_hand']
-            hand.joint_effort_limit = 40.
-            hand.stiffness = 500.
-            hand.damping = 40.
-        size=(.045,.045,.065)
+            drive=body_config['fixed_finger_drive']
+            hand.joint_effort_limit = drive['joint_effort_limit_N']
+            hand.stiffness = drive['stiffness']
+            hand.damping = drive['damping']
+        size=tuple(task_config['object_size_m'])
         obj=Object(name='pebx_object',object_type=ObjectType.RIGID,
             initial_pose=Pose(position_xyz=(.5+cfg.offset_xy_m[0],cfg.offset_xy_m[1],size[2]/2+.002),
                 rotation_xyzw=(0.,0.,math.sin(cfg.yaw_rad/2),math.cos(cfg.yaw_rad/2))),
@@ -63,9 +75,9 @@ class StableLiftEnvironment(ArenaEnvironmentFactory[StableLiftEnvironmentCfg]):
                 rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
                 collision_props=sim_utils.CollisionPropertiesCfg()))
         # Placement solver is disabled by the caller: analytical geometry has no USD helper.
-        reader=StateReader(cfg.embodiment,cfg.axis_mapping_xyzw)
+        reader=StateReader(cfg.embodiment,tuple(body_config['canonical_axis_mapping_xyzw']),size_m=size)
         reader.gripper=embodiment.get_gripper()
-        task=StableLiftTask(reader)
+        task=StableLiftTask(reader,judge_config=judge_config,settle_s=task_config['settle_s'])
         return IsaacLabArenaEnvironment(name=self.name,embodiment=embodiment,
             scene=Scene(assets=[obj,table,GroundPlane(initial_pose=Pose(position_xyz=(0.,0.,-1.5))),DomeLight()]),
             task=task,env_cfg_callback=set_control_rate_50hz,

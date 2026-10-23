@@ -7,6 +7,7 @@ import sys
 import time
 from pathlib import Path
 from pilot_support import atomic_json
+from physicalevobench_x.core.hashing import append_json
 
 
 def main():
@@ -38,13 +39,17 @@ def main():
                     OMNI_KIT_ACCEPT_EULA='YES',ISAACLAB_ARENA_FORCE_EXIT_ON_COMPLETE='1',PYTHONUNBUFFERED='1')
                 process = subprocess.Popen([str(args.python.absolute()),'scripts/pilot_suite.py','worker',
                     '--suite',str(suite),'--package',package],stdout=stream,stderr=subprocess.STDOUT,env=environment)
-                active[gpu] = dict(process=process,package=package,stream=stream,log=str(logfile))
+                active[gpu] = dict(process=process,package=package,stream=stream,log=str(logfile),started=time.monotonic())
+                append_json(suite/'supervisor_events.jsonl',dict(event='START',package=package,gpu=gpu,
+                    pid=process.pid,unix_s=time.time(),log=str(logfile)))
         for gpu, item in list(active.items()):
             code = item['process'].poll()
             if code is None:
                 continue
             item['stream'].close()
-            entry = dict(package=item['package'],returncode=code,log=item['log'],gpu=gpu)
+            entry = dict(package=item['package'],returncode=code,log=item['log'],gpu=gpu,pid=item['process'].pid,
+                child_wall_time_s=time.monotonic()-item['started'])
+            append_json(suite/'supervisor_events.jsonl',dict(event='END',unix_s=time.time(),**entry))
             if code==0 and (suite/'packages'/item['package']/'summary.json').is_file():
                 finished.append(entry)
             else:

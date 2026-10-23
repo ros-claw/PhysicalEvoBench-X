@@ -8,13 +8,31 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True, allow_inf_nan=False)
 
 
-BOUNDS = {
+LEGACY_BOUNDS = {
     'grasp_height_fraction': (0.25, 0.75),
     'pregrasp_clearance_m': (0.04, 0.12),
     'settle_time_s': (0.10, 0.80),
     'lift_vmax_mps': (0.03, 0.20),
     'lift_amax_mps2': (0.10, 0.80),
 }
+
+BOUNDS = {
+    'grasp_height_fraction': (.45, .75),
+    'pregrasp_clearance_m': (.07, .12),
+    'settle_time_s': (.10, .50),
+    'lift_vmax_mps': (.03, .10),
+    'lift_amax_mps2': (.10, .80),
+}
+
+
+def bounds_for(skill):
+    return LEGACY_BOUNDS if skill.controller_family == 'grasp_lift_state_v1' else BOUNDS
+
+
+def skill_schema(schema):
+    schema['allOf'] = [{'if': {'properties': {'controller_family': {'const': 'grasp_lift_state_v2'}}},
+        'then': {'properties': {'parameters': {'properties': {
+            name: {'minimum': lo, 'maximum': hi} for name, (lo, hi) in BOUNDS.items()}}}}}]
 
 
 class Parameters(StrictModel):
@@ -31,10 +49,18 @@ class Requirements(StrictModel):
 
 
 class SkillSpec(StrictModel):
+    model_config = ConfigDict(json_schema_extra=skill_schema)
     schema_version: Literal['physicalevobench_x.skillspec.v1']
     controller_family: Literal['grasp_lift_state_v1', 'grasp_lift_state_v2']
     parameters: Parameters
     requirements: Requirements
+
+    @model_validator(mode='after')
+    def versioned_bounds(self):
+        for name, (lo, hi) in bounds_for(self).items():
+            if not lo <= getattr(self.parameters, name) <= hi:
+                raise ValueError('Parameter outside controller version bounds: '+name)
+        return self
 
     @property
     def semantic_hash(self):

@@ -28,6 +28,20 @@ def main():
     p = sub.add_parser('llm-probe', help='Make one bounded real proposal with an explicit learner config')
     p.add_argument('--config',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p = sub.add_parser('run',help='Execute GPU acceptance, engineering smoke, throughput, freeze and full paired pilot')
+    p.add_argument('--config',type=Path,required=True)
+    p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--gpus',type=int,nargs='+',default=[0,1])
+    p = sub.add_parser('report',help='Generate matrix report; --verified-audit independently validates formal eligibility')
+    p.add_argument('--run-dir',type=Path,required=True)
+    p.add_argument('--verified-audit',action='store_true')
+    p.add_argument('--plots',action='store_true',help='Also export SVG/PDF; requires the report extra')
+    p = sub.add_parser('evaluate',help='Evaluate a frozen SkillSpec on an evaluator-owned held-out manifest')
+    p.add_argument('--skill',type=Path,required=True)
+    p.add_argument('--conditions',type=Path,required=True)
+    p.add_argument('--split',choices=['target_test','source_audit'],default='target_test')
+    p.add_argument('--embodiment',choices=['franka_panda','franka_robotiq'],required=True)
+    p.add_argument('--output',type=Path,required=True)
     for name in ('smoke','acquire','adapt','calibrate','dynamics-check'):
         p = sub.add_parser(name, help='Real PhysX development execution; requires pinned simulation environment')
         p.add_argument('--embodiment', choices=['franka_panda','franka_robotiq'], required=True)
@@ -43,6 +57,21 @@ def main():
             p.add_argument('--skill',type=Path,required=True)
     args = parser.parse_args()
     try:
+        if args.command in ('run','report'):
+            import subprocess
+            root=args.root.resolve()
+            script='complete_pipeline.py' if args.command=='run' else 'summarize_pilot.py'
+            command=[sys.executable,str(root/'scripts'/script)]
+            if args.command=='run':
+                command+=['--config',str(args.config.resolve()),'--output',str(args.output.resolve()),'--gpus',*[str(g) for g in args.gpus]]
+            else:
+                command+=['--suite',str(args.run_dir.resolve())]
+                if args.verified_audit:
+                    command+=['--verified-audit']
+            code=subprocess.run(command,cwd=root,check=False).returncode
+            if not code and args.command=='report' and args.plots:
+                code=subprocess.run([sys.executable,str(root/'scripts/plot_report.py'),'--suite',str(args.run_dir.resolve())],cwd=root,check=False).returncode
+            return code
         if args.command == 'llm-probe':
             from .learners.factory import proposer_factory
             from .core.schemas import SkillSpec
@@ -54,7 +83,7 @@ def main():
             write_json(args.output/'result.json',result)
             print(canonical(result))
             return 2 if result['fallback'] else 0
-        if args.command in ('smoke','acquire','adapt','calibrate','dynamics-check'):
+        if args.command in ('smoke','acquire','adapt','calibrate','dynamics-check','evaluate'):
             from .sim.doctor import doctor
             readiness = doctor(args.root)
             if readiness['status'] != 'READY_FOR_SIM_PROBE':

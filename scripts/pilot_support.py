@@ -63,6 +63,9 @@ class ReplayRunner:
         self.journal, self.runner = journal, runner
 
     def run(self, **request):
+        import shutil
+        if shutil.disk_usage(self.journal.directory).free < 2*1024**3:
+            raise RuntimeError('DISK_LIMIT: stop before starting another physical call; existing journal is resumable')
         public_request = {**request, 'skill': request['skill'].model_dump()}
         result = self.journal.call(public_request,
             lambda: self.runner.run(**request).model_dump(), physical=True)

@@ -1,10 +1,10 @@
 # Reproduction
 
-The checkout now has real native PhysX development evidence. It has no completed formal pilot to reproduce.
+The checkout has real native PhysX development evidence and a running frozen pilot. As of the 2026-10-24 progress review, five of twelve learning packages have completed; the full pilot has not passed its final audit. Partial results are not a finished benchmark release.
 
 ## CPU
 
-Use Python 3.12 and `pip install -r requirements-cpu.lock.txt`, then `pytest -q`. The separate CPU environment used Python 3.12.7; the native simulation environment uses 3.12.13 and its upstream-locked dependencies. Both pass 65 CPU tests. A CPU test result never certifies physics.
+Use Python 3.12 and `pip install -r requirements-cpu.lock.txt`, then `pytest -q`. The separate CPU environment uses Python 3.12.7; the native simulation environment uses 3.12.13 and its upstream-locked dependencies. The latest CPU check passes 87 tests, including three tests of the completed-package review tool. A CPU test result never certifies physics.
 
 ## Native simulation
 
@@ -36,4 +36,18 @@ Repeat separately with target budget 5 or 20 and a new output. Each budget start
 
 Model configuration, local credential handling and measured request evidence are documented in [Kimi K3](kimi_k3.md). Do not put private conditions, source histories or test feedback into target model requests. The current local interface is not an adversarial container security boundary.
 
-There is no safe resume implementation yet. Preserve interrupted logs; do not branch checkpoints and retain a favorable result. Docker remains an alternative implementation path whose image download/build has not been validated here. Native provenance is recorded honestly without inventing a container digest.
+Resume uses immutable completed-stage checkpoints and request-bound physical/model journals. Completed calls replay without new physical execution or model requests; ambiguous `STARTED` calls stop automatic resume. Preserve all attempts and never branch checkpoints to retain a favorable result. The current pilot has actually resumed after a disk-space stop. Commands and limitations are in [pilot execution](pilot_execution.md).
+
+While a pilot runs, check only finished packages with an exclusive new output:
+
+```bash
+.venv312/bin/python tools/check_completed_packages.py \
+  --suite runs/complete-v2-20261023/pilot \
+  --output runs/progress-review-NEW.json
+```
+
+The tool captures the completed package set once, verifies checkpoints, request identities, condition/skill coverage, trajectories, source/target reconstruction, paired arithmetic and costs. It excludes unfinished packages and always returns `formal_result_eligible=false`. It does not replace the full frozen-suite auditor, including its model-call and full-matrix checks. Do not edit frozen source/configuration/scripts during a running experiment. This review tool lives outside that execution input set.
+
+Docker remains an alternative implementation path whose image download/build has not been validated here. Native provenance is recorded honestly without inventing a container digest.
+
+On 2026-10-24, a separate local clone of project commit `d2e1c13` ran one nominal episode per embodiment successfully. Import provenance confirmed the package came from the new clone. This reused the pinned upstream checkout, installed native environment and cached assets, with the upstream directory explicitly linked into the clone. It is a clean **project-source** smoke, not a clean dependency installation or independent-machine replication. [Evidence and checksums](../evidence/reproduction/source_smoke_20261024.json) record both physical episodes separately from the formal pilot.

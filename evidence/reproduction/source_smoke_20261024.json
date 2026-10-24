@@ -1,0 +1,45 @@
+{
+  "status": "SOURCE_SMOKE_PASSED",
+  "formal_result_eligible": false,
+  "scope": "Clean project source; shared existing pinned upstream checkout, installed native runtime and cached assets. Not independent-machine reproduction or clean dependency installation.",
+  "project_commit": "d2e1c13202fb23013c6e9d6a14fc6f92ad08eb6e",
+  "import_origin": "/home/dell/pebx-reproduction/source-smoke-20261024/checkout/src/physicalevobench_x/__init__.py",
+  "gpu": 2,
+  "results": [
+    {
+      "embodiment": "franka_panda",
+      "returncode": 0,
+      "process_wall_s": 51.297421392053366,
+      "episodes": 1,
+      "successes": 1,
+      "infra_failures": 0
+    },
+    {
+      "embodiment": "franka_robotiq",
+      "returncode": 0,
+      "process_wall_s": 77.96875329781324,
+      "episodes": 1,
+      "successes": 1,
+      "infra_failures": 0
+    }
+  ],
+  "output": "/home/dell/pebx-reproduction/source-smoke-20261024",
+  "evidence_files": {
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda.log": "f88a5e17b429f75be6f6024ac556dee75d0035881ce6e0eafecdd8bd22879636",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/episode_results.jsonl": "b4c943de883915cc537169a33ad1090b1221e73ef2ed7cb502a5a8ca8bd597bf",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/trajectories/a1d31cb23b814d1bad4bef6f6334b687.json": "7bed76e661444186c54a380efd016d587ac9cf907fd6f88dbff255cde213e17a",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/trajectories/a1d31cb23b814d1bad4bef6f6334b687_trace.jsonl": "7867ca42e7b0b9fc358312c98206ed406d1d420184b9950d920f7cf226b08e94",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/trajectories/a1d31cb23b814d1bad4bef6f6334b687_reset.json": "1121fe6a7fdd86bde2788b37f86ac8a4951781b0a72b74558a51c681faad1141",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/trajectories/a1d31cb23b814d1bad4bef6f6334b687.npz": "611ed6521212e377c17ccec47a43530e69c277773f911d44d290f43074f93365",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/trajectories/runtime_inputs.json": "c04f598f0d2a6ca032f7bc6c6af569f1772d368722801f9fafd4259f017cb4ee",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_panda/trajectories/a1d31cb23b814d1bad4bef6f6334b687/arena.hdf5": "e7c30bd7dc4ba703e6086a440b315706ea0383373a333589cab9d580b41bcf51",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq.log": "585148ca2dcb3fb5fe3874070a378d38ea75239c4d90edb4c76c7c043b31ecfd",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/episode_results.jsonl": "569187f4ee095b9273e38cdeb8e97ea2088b225497b2d1b8016c0e3d04504dc7",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/trajectories/370f7587b6da4820927ec752770286f9.npz": "a73efb2e74d6db79ed92c9bd34933b369c080223f9cb22037fa69036c519fba2",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/trajectories/370f7587b6da4820927ec752770286f9_reset.json": "806edd773325c4cbc90ff747bd2fec76721a4fc8e8933048afa56648958f0488",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/trajectories/370f7587b6da4820927ec752770286f9.json": "6594b17d190a62ab3a8726d8244a4cfdbdc94a6ee15c11b50bea9059ce90c37e",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/trajectories/runtime_inputs.json": "6bf97c1d77416d75477cd3f4c37c4673b0b0e1c7f5513b51ca33a6c78eef0a80",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/trajectories/370f7587b6da4820927ec752770286f9_trace.jsonl": "5c20354928d1efef077b2c16456d9db3cc8d61421e1f35b8325351f47f583193",
+    "/home/dell/pebx-reproduction/source-smoke-20261024/franka_robotiq/trajectories/370f7587b6da4820927ec752770286f9/arena.hdf5": "e7c30bd7dc4ba703e6086a440b315706ea0383373a333589cab9d580b41bcf51"
+  }
+}

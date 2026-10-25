@@ -1,0 +1,64 @@
+{
+  "conclusion": "API matches direct PhysX velocity; constrained native angular velocity differs strongly from pose evolution. Cause not yet established; do not label this as confirmed physical spinning.",
+  "evidence_files": {
+    "/code/rosclaw/physicalEvoBench_X/runs/free-spin-probe-20261025/inputs.json": "b6d681cc1dbca13b5aff6fbe0002f2213afc73e174ca108de480f4d8b3e999bd",
+    "/code/rosclaw/physicalEvoBench_X/runs/free-spin-probe-20261025/report.json": "cbf6f64277cc66421b0d92eee9586189e26db05656b55c1e1ea69b33085bb351",
+    "/code/rosclaw/physicalEvoBench_X/runs/free-spin-probe-20261025/samples.jsonl": "910cc3cb869d36375f1081c1bc10aee46b731d60fdbdb7320ee5001d72394c52",
+    "/code/rosclaw/physicalEvoBench_X/runs/parameter-interventions-v1-20261025/investigation_stop.json": "ea338503c73cbb13613ee3384aea8398345767b9aa4fcb1e2a4ece7688dff545",
+    "/code/rosclaw/physicalEvoBench_X/runs/state-consistency-probe-20261025/control_samples.jsonl": "7d66b707a63dc1f629f288cd64e7b85813ab5c0501e9f05bc4f105e6f819c5ca",
+    "/code/rosclaw/physicalEvoBench_X/runs/state-consistency-probe-20261025/inputs.json": "a1016cafa7bd1b05ce709c817c97b448d2fa9cc82573900f10c9256ca7a8ccf0",
+    "/code/rosclaw/physicalEvoBench_X/runs/state-consistency-probe-20261025/physics_samples.jsonl": "281849489ee29daa23e9b2a7134fcd6e9dfea2344f0059ec64652a3441ffa1ed",
+    "/code/rosclaw/physicalEvoBench_X/runs/state-consistency-probe-20261025/report.json": "0d165d8acf850e12e10c9d269f74db12e5ad98ae6d075f0eabecf1d6a48a2dc4"
+  },
+  "final_half_second_post_hoc": {
+    "duration_s": 0.5,
+    "physics_interval_s": 0.005,
+    "pose_angular_z_integral_rad": -2.559231838412258e-05,
+    "pose_increment_angular_norm_median_radps": 0.0011853753403198708,
+    "raw_angular_norm_median_radps": 0.3284862464259636,
+    "raw_angular_z_integral_rad": -0.16405465841293335
+  },
+  "formal_result_eligible": false,
+  "free_spin": {
+    "evidence_sha256": "910cc3cb869d36375f1081c1bc10aee46b731d60fdbdb7320ee5001d72394c52",
+    "formal_result_eligible": false,
+    "max_api_raw_angular_difference": 0.0,
+    "minimum_height_m": 0.3509119749069214,
+    "pose_derived_angular_z_median_radps": 0.19654947794766625,
+    "raw_angular_z_median_radps": 0.19950062036514282,
+    "samples": 21,
+    "status": "FREE_SPIN_CALIBRATION_COMPLETE"
+  },
+  "interrupted_study": {
+    "resume_policy": "No automatic replay of unresolved calls",
+    "scope": "Known completed calls only; interrupted scene build/reset has unknown additional resource cost",
+    "unresolved_started_calls": 2,
+    "valid_completed_calls": 9
+  },
+  "scope": "NATIVE_STATE_SEMANTICS_REVIEW",
+  "task_probe": {
+    "control_reads": 853,
+    "episode_success": true,
+    "evidence_files": {
+      "/code/rosclaw/physicalEvoBench_X/runs/state-consistency-probe-20261025/control_samples.jsonl": "7d66b707a63dc1f629f288cd64e7b85813ab5c0501e9f05bc4f105e6f819c5ca",
+      "/code/rosclaw/physicalEvoBench_X/runs/state-consistency-probe-20261025/physics_samples.jsonl": "281849489ee29daa23e9b2a7134fcd6e9dfea2344f0059ec64652a3441ffa1ed"
+    },
+    "formal_result_eligible": false,
+    "max_api_raw_angular_difference": 0.0,
+    "max_api_raw_linear_difference": 0.0,
+    "note": "Includes settle/motion; inspect stable elevated interval and signed substep sequences before attributing a cause.",
+    "physics_samples": 1704,
+    "pose_increment_angular_median": 0.0,
+    "raw_angular_norm_median": 0.0023606707062995766,
+    "status": "NATIVE_STATE_PROBE_COMPLETE"
+  },
+  "official_reference": {
+    "url": "https://nvidia-omniverse.github.io/PhysX/physx/5.8.0/docs/Simulation.html#solver-iterations",
+    "interpretation": "Constraint solving can report velocity different from pose differences; supports a possible explanation, not proof of this scene mechanism."
+  },
+  "diagnostic_tools_sha256": {
+    "tools/probe_state_consistency.py": "26e1c6f4aac5d29d869c8d53e9b09283540deb2baa1a35b1c621b5a7681417aa",
+    "tools/probe_free_spin.py": "3e75634d52279900a7a07194a4c3ae76666792c46cdafd1ead49de772e008792",
+    "tools/state_consistency_metrics.py": "c6ef8def5b95c467c59cc3049c91c8ea4c6b236b032fa01099002f9ed437574c"
+  }
+}

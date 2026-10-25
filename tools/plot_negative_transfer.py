@@ -45,7 +45,7 @@ def plot(pilot, output):
                 export.append(dict(case=index+1,side=label,execution_time_s=elapsed,lift_m=h,
                                    object_angular_radps=a,elevated=bool(high)))
             for p in [trajectory,meta_path,trace]:provenance[str(p)]=file_digest(p)
-        for col,(threshold,ylabel) in enumerate([(.5,'Reported angular speed (rad/s)'),(.08,'Lift (m)')]):
+        for col,(threshold,ylabel) in enumerate([(.5,'Native angular\nspeed (rad/s)'),(.08,'Lift (m)')]):
             axis=axes[index,col]
             axis.axhline(threshold,color='#555555',ls=':',lw=1.1)
             axis.set_xlim(0,15)
@@ -64,8 +64,10 @@ def plot(pilot, output):
     fig.tight_layout(rect=(0,.055,1,.94))
     for suffix in ('svg','pdf','png'):fig.savefig(output/('failure_pairs.'+suffix),dpi=150)
     plt.close(fig)
+    svg=output/'failure_pairs.svg'
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
     with (output/'trace_points.csv').open('w') as f:
-        writer=csv.DictWriter(f,fieldnames=list(export[0]));writer.writeheader();writer.writerows(export)
+        writer=csv.DictWriter(f,fieldnames=list(export[0]),lineterminator='\n');writer.writeheader();writer.writerows(export)
     write_json(output/'manifest.json',dict(scope='POST_HOC_HISTORICAL_FAILURE_PAIRS',formal_result_eligible=False,
         selection='Every included pair whose After failed in the specified run/budget; no cherry-picked subset',
         failure_pairs=len(failed),input_files=provenance,

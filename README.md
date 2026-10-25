@@ -6,6 +6,8 @@ The v0.1 track compares Franka/Panda Hand and Franka/Robotiq 2F-85 using a share
 
 **Current status (2026-10-25): the frozen internal pilot completed all 12 learning packages and passed its full evidence audit.** It used 3,390 physical executions and 2,250 equivalent aliases. No positive target success-rate transfer was observed; ten source runs rolled back, one accepted update had zero target gain, and one produced negative transfer. Three learning seeds do not establish a population-level significance claim. See the [archived results](evidence/pilot_v0.1/report.md), [implementation status](docs/status.md), [next steps](docs/next_steps_20261025.md) and [中文说明](README.zh-CN.md). Release review, fixed-sample visualization and independent-installation reproduction remain pending.
 
+**Interpretation caveat:** native probes found that constrained PhysX-reported angular velocity can differ strongly from pose evolution. Negative transfer here is a decrease under the frozen native-state success predicate, not established evidence of sustained macroscopic spinning or general physical skill degradation. See the [state-semantics investigation](docs/state_semantics_20261025.md). Parameter interventions remain separate development diagnostics.
+
 ## CPU development
 
 ```bash

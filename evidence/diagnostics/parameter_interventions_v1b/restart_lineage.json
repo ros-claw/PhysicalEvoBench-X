@@ -1,0 +1,11 @@
+{
+  "original_plan_hash": "62913bc670d5cb3fda62c1f0f929876e90b7717df15ad0d956c8315f04fd7aa8",
+  "restart_plan_hash": "91776ccdf84426eaa849c33dde18d4ea6aaa613d6b84afd9c897b65d1ebf6d2b",
+  "conditions_variants_schedule_identical": true,
+  "previous_completed_calls": 9,
+  "previous_unresolved_calls": 2,
+  "previous_calls_reused": 0,
+  "interpretation": "Effects on frozen native predicates; not proof of persistent macroscopic spinning",
+  "recorded_unix_s": 1792892177.9820435,
+  "formal_result_eligible": false
+}

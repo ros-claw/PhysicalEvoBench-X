@@ -4,7 +4,7 @@ Measuring whether newly acquired robot experience improves another embodiment un
 
 The v0.1 track compares Franka/Panda Hand and Franka/Robotiq 2F-85 using a shared state-based StableLift executor. It measures the marginal effect of **SourceAfter versus SourceBefore**, under independent target budgets of 0, 5 and 20 episodes. This is near-embodiment parameter transfer, not a claim of arbitrary robot generalization.
 
-**Current status: native runtime and historical nominal checks are GPU verified; 46 v2 development range episodes are complete (Panda 21/23, Robotiq 23/23).** A real 20-episode source run and 0/5-budget paired development bridge are complete; formal transfer experiments are not complete. The real Kimi K3 proposer is connected. See [implementation status](docs/status.md) and [中文说明](README.zh-CN.md).
+**Current status (2026-10-25): the frozen internal pilot completed all 12 learning packages and passed its full evidence audit.** It used 3,390 physical executions and 2,250 equivalent aliases. No positive target success-rate transfer was observed; ten source runs rolled back, one accepted update had zero target gain, and one produced negative transfer. Three learning seeds do not establish a population-level significance claim. See the [archived results](evidence/pilot_v0.1/report.md), [implementation status](docs/status.md), [next steps](docs/next_steps_20261025.md) and [中文说明](README.zh-CN.md). Release review, fixed-sample visualization and independent-installation reproduction remain pending.
 
 ## CPU development
 

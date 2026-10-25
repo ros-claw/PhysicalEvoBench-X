@@ -1,6 +1,6 @@
 # Reproduction
 
-The checkout has real native PhysX development evidence and a running frozen pilot. As of the 2026-10-24 progress review, five of twelve learning packages have completed; the full pilot has not passed its final audit. Partial results are not a finished benchmark release.
+The frozen internal pilot completed all twelve learning packages and passed the full frozen-evidence audit on 2026-10-25. [Archived results](../evidence/pilot_v0.1/report.md) include zero and negative transfer; no positive target success-rate transfer was observed. Release review and independent-installation reproduction remain pending. Audit eligibility does not certify positive transfer, arbitrary robot generalization or isolation against malicious submissions.
 
 ## CPU
 

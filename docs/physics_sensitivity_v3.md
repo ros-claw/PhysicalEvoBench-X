@@ -20,3 +20,15 @@
 改变物理配置本身可能改变抓持轨迹、滑落或晃动幅度。报告必须将“实际物理行为改变”“同轨迹两观测频率分歧”“刺激未生效”分开，不将所有结果变化归咎于判据。此批仅有固定控制和一个事后选定的开发病例，没有新学习、总体效果估计或独立安装声明。
 
 调用共 44 次（8 配置探针 + 36 完整任务）。全部调用、失败、未决状态和已知成本保留 journal；源码/配置/hash 与计划在 GPU 前提交。无论整体通过与否都保留完整矩阵，不按结果修改阈值、丢弃配置或选换 seed。只有结果和轨迹核对完成后才决定后续版本。
+
+## 公开输入复现
+
+已归档选定的**开发**病例小型 JSON 和原计划/报告，不含私有正式测试条件或大型轨迹。全新 checkout 可先生成明确标记的衍生输入，再用未修改的 v3 工具创建新的物理计划：
+
+```bash
+PYTHONPATH="$PWD/src" python tools/prepare_public_physics_inputs.py --output "$PWD/runs/public-source-inputs"
+PYTHONPATH="$PWD/src" python tools/validate_pose_physics_v3.py plan --study "$PWD/runs/new-physics-study" --source-study "$PWD/runs/public-source-inputs"
+# 然后检查、保存新 plan，使用自己已安装的原生解释器执行新 study。
+```
+
+衍生输入只修改源证据的路径映射并重算 manifest hash，原物理报告逐字保留并明确属于原机器。该准备步骤没有执行物理调用；它不认证一次新的成功，不要求访问原机器的 `runs/`。工具拒绝覆盖已有匹配诊断目录。新的原生执行仍须拥有固定依赖、资产和许可，并保留全部调用。

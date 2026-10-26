@@ -58,6 +58,7 @@ def build(study,archive):
         lines.append(f"| {name} | {selection['accepted_update']} | {selection['reason']} | {package['source_validation']['before_successes']}/4 → {package['source_validation']['candidate_successes']}/4 | {sa['before_successes']}/4 → {sa['after_successes']}/4 | {ta['before_successes']}/4 → {ta['after_successes']}/4 | {ta['wins']} / {ta['losses']} |")
     lines+=['','上述四个配对条件仅作开发描述，不给显著性或总体效果结论。源审计与目标成绩不参与更新或回滚。','',
         '| 提案器 | 阶段 | 条件层 | Before | After |','|---|---|---|---|---|']
+    null_notes=[]
     for package in audit['packages']:
         name=package['package']['package_id']
         for stage,cell in package['paired'].items():
@@ -66,7 +67,8 @@ def build(study,archive):
         nulls=package['null_repeats']
         if nulls:
             exact=sum(x['control']['exactly_equal'] and x['physics']['exactly_equal'] for x in nulls)
-            lines+=['',f"{name} 回滚后的真实同产物配对：{exact}/{len(nulls)} 对公开状态/实际动作精确一致。"]
+            null_notes+=['',f"{name} 回滚后的真实同产物配对：{exact}/{len(nulls)} 对公开状态/实际动作精确一致。"]
+    lines+=null_notes
     lines+=['','## 准备状态检查','']
     for package in audit['packages']:
         checks=package['preparation_checks'];exact=sum(c['control']['exactly_equal'] and c['physics']['exactly_equal'] for c in checks);differences={}
@@ -130,8 +132,8 @@ def plot_source(audit,candidates,archive):
         bottom.set_ylim(-.05,1.05);bottom.set_xticks(range(6));bottom.set_xlabel('Candidate index (0 = original skill)');bottom.set_ylabel('Parameter within bound [0, 1]')
         for ax in (top,bottom):ax.grid(alpha=.2)
     axes[1,-1].legend(fontsize=8,loc='upper left')
-    fig.suptitle('Actual budgeted source practice: every candidate and bounded parameter proposal')
-    fig.text(.5,.018,'Dotted: training-selected candidate; validation separately accepts or rolls back. One learning seed; no method superiority estimate.',ha='center',fontsize=9)
+    fig.suptitle('Actual budgeted source practice:\nevery candidate and bounded parameter proposal' if columns==1 else 'Actual budgeted source practice: every candidate and bounded parameter proposal')
+    fig.text(.5,.018,('Dotted: training-selected candidate; validation accepts or rolls back.\nOne learning seed; no method superiority estimate.' if columns==1 else 'Dotted: training-selected candidate; validation separately accepts or rolls back. One learning seed; no method superiority estimate.'),ha='center',fontsize=9,va='bottom')
     fig.tight_layout(rect=[0,.05,1,.95]);save(fig,archive,'source_learning')
 
 
@@ -153,10 +155,10 @@ def plot_pairs(audit,archive):
             ax.text(col,row,('SUCCESS' if score['task_success'] else 'FAIL')+'\n'+time+f"\nlift {case['macro_motion']['max_lift_m']:.3f} m",ha='center',va='center',fontsize=10.5,linespacing=1.35)
         ax.tick_params(length=0,pad=7)
         ax.set_xticks(np.arange(-.5,2,1),minor=True);ax.set_yticks(np.arange(-.5,8,1),minor=True);ax.grid(which='minor',color='white',linewidth=2);ax.tick_params(which='minor',bottom=False,left=False)
-    fig.suptitle('Independent paired checks after freezing source artifacts',fontsize=15)
-    fig.text(.5,.935,'Top four rows: source audit (Panda). Bottom four: target evaluation (Robotiq), zero adaptation.',ha='center',fontsize=10)
-    fig.text(.5,.025,'Color/time: candidate 50 Hz first success. Lift: full retained trace maximum. All failures retained.\nFour pairs per stage and one learning seed; development only, no population significance estimate.',ha='center',fontsize=9)
-    fig.subplots_adjust(left=.22 if columns==1 else .12,right=.98,top=.9,bottom=.085,wspace=.5);save(fig,archive,'all_paired_cases')
+    fig.suptitle('Independent paired checks after\nfreezing source artifacts' if columns==1 else 'Independent paired checks after freezing source artifacts',fontsize=14 if columns==1 else 15)
+    fig.text(.5,.925 if columns==1 else .935,'Top four: source audit (Panda).\nBottom four: target evaluation (Robotiq), zero adaptation.' if columns==1 else 'Top four rows: source audit (Panda). Bottom four: target evaluation (Robotiq), zero adaptation.',ha='center',fontsize=9 if columns==1 else 10,va='center')
+    fig.text(.5,.025,('Color/time: first success at 50 Hz. Lift: full trace maximum.\nAll failures retained. Four pairs; one learning seed.\nDevelopment only, no population significance estimate.' if columns==1 else 'Color/time: candidate 50 Hz first success. Lift: full retained trace maximum. All failures retained.\nFour pairs per stage and one learning seed; development only, no population significance estimate.'),ha='center',fontsize=9,va='bottom')
+    fig.subplots_adjust(left=.22 if columns==1 else .12,right=.98,top=.87 if columns==1 else .9,bottom=.10 if columns==1 else .085,wspace=.5);save(fig,archive,'all_paired_cases')
 
 
 def plot_target_traces(study,audit,archive):
@@ -174,8 +176,8 @@ def plot_target_traces(study,audit,archive):
             ax.axhline(.08,color='#555555',linestyle=':',linewidth=1);ax.set_xlim(0,15);ax.set_ylim(-.2,.2);ax.grid(alpha=.2)
             if col==0:ax.set_ylabel('Object lift (m)')
             if row==3:ax.set_xlabel('Target task elapsed time (s)')
-    axes[0,0].legend(fontsize=8);fig.suptitle('Zero-budget target evaluation: every before/after height trajectory')
-    fig.text(.5,.018,'Curves may overlap. Dotted: 8 cm lift; height alone is not the stability score.\nNo target feedback was used for source selection.',ha='center',fontsize=9)
+    axes[0,0].legend(fontsize=8);fig.suptitle('Zero-budget target evaluation:\nevery before/after height trajectory' if columns==1 else 'Zero-budget target evaluation: every before/after height trajectory')
+    fig.text(.5,.018,('Dotted: 8 cm lift; height alone is not stability.\nCurves may overlap. Target feedback never selected the source artifact.' if columns==1 else 'Curves may overlap. Dotted: 8 cm lift; height alone is not the stability score.\nNo target feedback was used for source selection.'),ha='center',fontsize=9,va='bottom')
     fig.tight_layout(rect=[0,.05,1,.95]);save(fig,archive,'target_height_trajectories')
 
 

@@ -125,15 +125,23 @@ def audit_model_calls(root,package,source):
         immutable_model_revision_available=False)
 
 
-def audit(study,output,replay_root):
-    p,m=verify(study);report=json.loads((study/'report.json').read_text())
-    if report['status']!='DEVELOPMENT_LEARNING_EXECUTION_COMPLETE' or report['plan_hash']!=p['plan_hash'] or report['unresolved_calls']:
-        raise ValueError('Incomplete learning execution')
+def audit(study,output,replay_root,package_id=None):
+    p,m=verify(study)
+    selected=[x for x in p['packages'] if package_id is None or x['package_id']==package_id]
+    if not selected:raise ValueError('Unknown package for audit')
+    if package_id is None:
+        report=json.loads((study/'report.json').read_text())
+        if report['status']!='DEVELOPMENT_LEARNING_EXECUTION_COMPLETE' or report['plan_hash']!=p['plan_hash'] or report['unresolved_calls']:
+            raise ValueError('Incomplete learning execution')
+    else:
+        status=study/'packages'/package_id/'status.json'
+        if json.loads(status.read_text())['status']!='PACKAGE_COMPLETE':raise ValueError('Requested package incomplete')
+        report=None
     if replay_root.exists() or output.exists():raise ValueError('Retain previous audit output/projection')
     replay_root.mkdir(parents=True)
     config=load_pose_window_config(ROOT/'configs/measurement/pose_path_candidate_v1.yaml')
     packages=[];cases=[];evidence={};costs=dict(known_complete_physical_calls=0,observed_sim_time_s=0.,episode_wall_time_s=0.)
-    for package in p['packages']:
+    for package in selected:
         root=study/'packages'/package['package_id'];identity=dict(plan_hash=p['plan_hash'],package=package)
         completed={};stage_results={};stage_paths={}
         for name,body,expected in [('source',package['source'],20),('source_audit',package['source'],8),('target_zero',package['target'],8)]:
@@ -269,10 +277,10 @@ def audit(study,output,replay_root):
             before_skill=before.model_dump(),after_skill=after.model_dump(),source_validation=validation,artifact_freeze=expected_freeze,source_reconstruction_passed=True,
             source_budget=json.loads((source/'costs.json').read_text()),paired=paired_summary,null_repeats=null_repeats,model_calls=model,
             preparation_checks=preparation,all_preparation_states_and_actions_exact=all(c['control']['exactly_equal'] and c['physics']['exactly_equal'] for c in preparation)))
-    if costs!=report['costs'] or costs['known_complete_physical_calls']!=72:raise ValueError('Whole-study physical cost mismatch')
-    result=dict(status='GEOMETRY_LEARNING_TRACE_AUDIT_PASSED',formal_result_eligible=False,plan_hash=p['plan_hash'],
+    if costs['known_complete_physical_calls']!=36*len(selected) or (report is not None and costs!=report['costs']):raise ValueError('Physical cost/coverage mismatch')
+    result=dict(status='GEOMETRY_LEARNING_TRACE_AUDIT_PASSED' if package_id is None else 'GEOMETRY_LEARNING_PACKAGE_TRACE_AUDIT_PASSED',audited_package=package_id,formal_result_eligible=False,plan_hash=p['plan_hash'],
         private_manifest_canonical_sha256=p['manifest_sha256'],packages=packages,cases=cases,costs=costs,
-        source_report_sha256=file_digest(study/'report.json'),evidence_files=evidence,
+        source_report_sha256=file_digest(study/'report.json') if report is not None else None,evidence_files=evidence,
         score_recomputation_count=3*len(cases),rate_disagreements=sum(c['outcomes']['candidate_50hz']['task_success']!=c['outcomes']['candidate_200hz']['task_success'] for c in cases),
         auditor_sha256=file_digest(__file__),limitations=[p['interpretation'],p['environment_scope'],
             'One direction, two learners and one source-learning seed; no population significance or method superiority inference.',
@@ -286,5 +294,5 @@ def audit(study,output,replay_root):
 
 if __name__=='__main__':
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--study',type=Path,required=True);ap.add_argument('--output',type=Path,required=True)
-    ap.add_argument('--replay-root',type=Path,required=True);a=ap.parse_args();r=audit(a.study.resolve(),a.output.resolve(),a.replay_root.resolve())
+    ap.add_argument('--replay-root',type=Path,required=True);ap.add_argument('--package',choices=['random','kimi']);a=ap.parse_args();r=audit(a.study.resolve(),a.output.resolve(),a.replay_root.resolve(),a.package)
     print(json.dumps(dict(status=r['status'],physical_calls=r['costs']['known_complete_physical_calls'],score_recomputation_count=r['score_recomputation_count'])))

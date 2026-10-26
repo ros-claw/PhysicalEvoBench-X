@@ -198,6 +198,8 @@ def audit(study,output,replay_root):
             ReplayRunner(physical,NoExecution()),replay_dir)
         if replayed!=after or reconstruct(source)!=reconstruct(replay_dir):raise ValueError('Source learning reconstruction mismatch')
         if physical.index!=20 or proposals.index!=5:raise ValueError('Source replay budget mismatch')
+        if json.loads((source/'costs.json').read_text())!=json.loads((replay_dir/'costs.json').read_text()):
+            raise ValueError('Source cost/budget replay mismatch')
         paired_summary={};null_repeats=[]
         for name,split,phase in [('source_audit','source_audit','source_audit'),('target_zero','target_test','evaluation')]:
             results=stage_results[name];rows=json.loads((stage_paths[name]/'paired_results.json').read_text());summary=json.loads((stage_paths[name]/'summary.json').read_text())
@@ -215,6 +217,16 @@ def audit(study,output,replay_root):
             expected_summary=dict(pairs=4,before_successes=sum(r.task_success for r in results[::2]),after_successes=sum(r.task_success for r in results[1::2]),
                 delta_new=sum(int(b.task_success)-int(a.task_success) for a,b in zip(results[::2],results[1::2]))/4)
             if summary!=expected_summary:raise ValueError('Paired summary mismatch')
+            paired_cost=json.loads((stage_paths[name]/'costs.json').read_text())
+            expected_cost=dict(logical_episode_requests=8,physical_episode_executions=8,aliased_episode_requests=0,
+                budget_charged_episodes=0,infra_retries=0,excluded_pair_episode_executions=0,excluded_valid_pair_episode_executions=0,
+                sim_time_s=sum(r.sim_time_s for r in results),wall_time_s=sum(r.wall_time_s for r in results))
+            if paired_cost!=expected_cost or json.loads((stage_paths[name]/'aliases.json').read_text())!=[]:
+                raise ValueError('Paired costs or hidden aliases mismatch')
+            attempts=[json.loads(line) for line in (stage_paths[name]/'pair_attempts.jsonl').read_text().splitlines()]
+            expected_attempts=[dict(condition_id=c['condition_id'],attempt_index=0,
+                episode_ids=[results[2*i].episode_id,results[2*i+1].episode_id],included=True) for i,c in enumerate(m[split])]
+            if attempts!=expected_attempts:raise ValueError('Paired attempts mismatch')
             strata={family:dict(pairs=sum(c['name']==family for c in m[split]),
                 before_successes=sum(a.task_success for c,a in zip(m[split],results[::2]) if c['name']==family),
                 after_successes=sum(b.task_success for c,b in zip(m[split],results[1::2]) if c['name']==family)) for family in ('tall_narrow','wide')}

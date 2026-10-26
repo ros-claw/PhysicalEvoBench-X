@@ -37,12 +37,12 @@ def build(study,archive):
         lines.append(f"| {v} | {before} | {after} | {case['all_score_fields_exact']} | {exact} |")
     axes[0].set_ylabel('Object lift (m)');axes[0].legend(fontsize=8)
     fig.suptitle('Post-hoc Robotiq wide-condition replication: every skill')
-    fig.text(.5,.025,'Dotted: 8 cm lift requirement; exact repeat curves overlap. Authored skills, same seed; no learning or transfer claim.',ha='center',fontsize=9)
+    fig.text(.5,.025,'Dotted: 8 cm lift requirement; source and replication curves may overlap. Authored skills, same seed; no learning or transfer claim.',ha='center',fontsize=9)
     fig.tight_layout(rect=[0,.08,1,.94])
     for ext in ('png','svg','pdf'):fig.savefig(archive/('all_replications.'+ext),dpi=170)
     plt.close(fig)
     lines+=['',f"新增 {r['completed_cases']} 次真实调用，观察 {r['costs']['observed_sim_time_s']:.1f} 仿真秒；全部 9 个评分离线重算一致。",'',
-        '只验证这三个固定开发条件的复现；不推断参数因果接触机理、多 seed 稳健性或新经验迁移。宽条件依然是几何与摩擦的联合条件。',
+        '只验证该固定开发条件下三个技能的复现；不推断参数因果接触机理、多 seed 稳健性或新经验迁移。宽条件依然是几何与摩擦的联合条件。',
         '初始与慢抬升成功、高抓取失败的现象应与细高条件的相反偏好共同保留。']
     (archive/'report.zh-CN.md').write_text('\n'.join(lines)+'\n')
     write_json(archive/'archive_manifest.json',dict(formal_result_eligible=False,

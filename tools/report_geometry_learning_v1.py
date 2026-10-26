@@ -17,6 +17,8 @@ def build(study,archive):
     archive.mkdir(parents=True,exist_ok=False)
     for name in ('plan.json','report.json','supervisor.json','trace_audit.json','trace_audit.log'):
         shutil.copyfile(study/name,archive/name)
+    if (study/'verification_logs').exists():shutil.copytree(study/'verification_logs',archive/'verification_logs')
+    if (study/'public_plan_review.json').exists():shutil.copyfile(study/'public_plan_review.json',archive/'public_plan_review.json')
     rows=[]
     for c in audit['cases']:
         row={k:c[k] for k in ('package_id','stage','body','episode_id','condition_id','stratum','phase','candidate_index','skill_hash','role')}
@@ -33,8 +35,8 @@ def build(study,archive):
     candidates={};lines=['# 新几何任务：真实源学习与零预算迁移','',
         f"状态 `{audit['status']}`；{len(rows)} 次真实调用，{audit['score_recomputation_count']} 个评分重算；`formal_result_eligible=false`。",'',
         'Panda→Robotiq；两种提案器、每种一个源学习 seed。每组 20 回合源练习，四个源审计配对、四个目标配对；目标适配 0 回合。即使源回滚，两侧仍实际执行，成本全部保留。','',
-        '| 提案器 | 源验证接受 | 原因 | 独立源审计 Before→After | 目标 Before→After | 目标收益/退化条件数 |',
-        '|---|---|---|---|---|---|']
+        '| 提案器 | 源验证接受 | 原因 | 源验证 Before→候选 | 独立源审计 Before→After | 目标 Before→After | 目标收益/退化条件数 |',
+        '|---|---|---|---|---|---|---|']
     for package in audit['packages']:
         name=package['package']['package_id'];root=study/'packages'/name;dest=archive/name;dest.mkdir()
         paths={}
@@ -49,7 +51,7 @@ def build(study,archive):
         shutil.copyfile(study/(name+'.log'),dest/'native.log')
         source=paths['source'];candidates[name]=[json.loads(l) for l in (source/'candidates.jsonl').read_text().splitlines()]
         selection=package['source_selection'];sa=package['paired']['source_audit'];ta=package['paired']['target_zero']
-        lines.append(f"| {name} | {selection['accepted_update']} | {selection['reason']} | {sa['before_successes']}/4 → {sa['after_successes']}/4 | {ta['before_successes']}/4 → {ta['after_successes']}/4 | {ta['wins']} / {ta['losses']} |")
+        lines.append(f"| {name} | {selection['accepted_update']} | {selection['reason']} | {package['source_validation']['before_successes']}/4 → {package['source_validation']['candidate_successes']}/4 | {sa['before_successes']}/4 → {sa['after_successes']}/4 | {ta['before_successes']}/4 → {ta['after_successes']}/4 | {ta['wins']} / {ta['losses']} |")
     lines+=['','上述四个配对条件仅作开发描述，不给显著性或总体效果结论。源审计与目标成绩不参与更新或回滚。','',
         '| 提案器 | 阶段 | 条件层 | Before | After |','|---|---|---|---|---|']
     for package in audit['packages']:
@@ -68,6 +70,7 @@ def build(study,archive):
     lines+=['',f"物理累计观察仿真时间 {audit['costs']['observed_sim_time_s']:.2f} s；累计回合壁钟 {audit['costs']['episode_wall_time_s']:.2f} s（建场景至结果捕获，不含 teardown；模型耗时另列）。",'',
         '精确条件与大型原始逐步状态留在本机运行目录，不提交私有目标 manifest。公开 CSV 保留每次真实执行、失败、安全停止、两采样频率及旧评分；source projection、模型调用、源冻结及只读重建证据可检查。',
         '完整时段轨迹不表示首次成功后始终稳定。新任务显式使用候选判据，不替换旧默认或重新标记旧成绩。',
+        '本批没有无反馈提案消融，模型先验、搜索与反馈的贡献没有单独分离。完整观察成本不因首次成功而提前停止，不能从完成时间差直接声称仿真成本节省。',
         '条件层在看到校准后选定；只检验全局五维参数，尚未验证条件技能、反向、多 seed 或目标适配预算。']
     (archive/'report.zh-CN.md').write_text('\n'.join(lines)+'\n')
     plot_source(audit,candidates,archive);plot_pairs(audit,archive);plot_target_traces(study,audit,archive)

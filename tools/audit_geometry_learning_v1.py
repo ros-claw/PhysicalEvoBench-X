@@ -3,6 +3,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+from statistics import median
 import numpy as np
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -260,8 +261,12 @@ def audit(study,output,replay_root):
             paired_summary[name]={**summary,'strata':strata,'wins':sum(not a.task_success and b.task_success for a,b in zip(results[::2],results[1::2])),
                 'losses':sum(a.task_success and not b.task_success for a,b in zip(results[::2],results[1::2]))}
         model=audit_model_calls(root,package,source)
+        va,vb=stage_results['source'][12:16],stage_results['source'][16:20]
+        validation=dict(pairs=4,before_successes=sum(x.task_success for x in va),candidate_successes=sum(x.task_success for x in vb),
+            before_success_time_median_s=median([x.completion_time_s for x in va if x.task_success]) if any(x.task_success for x in va) else None,
+            candidate_success_time_median_s=median([x.completion_time_s for x in vb if x.task_success]) if any(x.task_success for x in vb) else None)
         packages.append(dict(package=package,source_selection=json.loads((source/'selection.json').read_text()),
-            before_skill=before.model_dump(),after_skill=after.model_dump(),artifact_freeze=expected_freeze,source_reconstruction_passed=True,
+            before_skill=before.model_dump(),after_skill=after.model_dump(),source_validation=validation,artifact_freeze=expected_freeze,source_reconstruction_passed=True,
             source_budget=json.loads((source/'costs.json').read_text()),paired=paired_summary,null_repeats=null_repeats,model_calls=model,
             preparation_checks=preparation,all_preparation_states_and_actions_exact=all(c['control']['exactly_equal'] and c['physics']['exactly_equal'] for c in preparation)))
     if costs!=report['costs'] or costs['known_complete_physical_calls']!=72:raise ValueError('Whole-study physical cost mismatch')

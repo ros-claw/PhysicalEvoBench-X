@@ -38,7 +38,9 @@ def build(study,archive):
         rate_disagreements=audit['rate_disagreements'],effects=effects,repeats=audit['repeats'],
         all_tall_repeats_exact=all(r['control']['exactly_equal'] and r['physics']['exactly_equal'] for r in audit['repeats']),
         cases=rows,limitations=audit['limitations'],source_report_sha256=file_digest(study/'report.json'),
-        plan_hash=plan['plan_hash'])
+        plan_hash=plan['plan_hash'],
+        realized_stages=[dict(body=c['body'],scenario=c['scenario'],stage_counts=c['executor_stage_counts']) for c in audit['cases']],
+        cost_scope='Episode wall time is scene construction through last result capture, before teardown; supervisor logs separately retain process wall time.')
     write_json(archive/'summary.json',summary)
     lines=['# 开发分布校准 v1：完整实际结果','',
         f"完成 {len(rows)}/{plan['planned_calls']} 次真实 PhysX 调用；离线审计 `{audit['status']}`；`formal_result_eligible=false`。",'',
@@ -48,9 +50,14 @@ def build(study,archive):
     for r in rows:
         labels=['成功' if r[k+'_success'] else '失败' for k in ('candidate_50hz','candidate_200hz','native_50hz')]
         lines.append(f"| {r['body']} | {r['condition']}{' (重复)' if r['repeat_of'] else ''} | {r['variant']} | {' | '.join(labels)} | {r['max_lift_m']:.4f} |")
+    lines+=['','## 执行阶段与解释','',
+        '失败回合不能仅凭分数解释：下面列出其真实阶段及最大抬升。抓取高度同时影响接近和下降目标，不能直接把效果归因于夹持质量。慢抬升参数只有到达 LIFT 后才被消费；未进入 LIFT 的回合不能检验抬升参数敏感性。','']
+    for c in audit['cases']:
+        if not c['outcomes']['candidate_200hz']['task_success']:
+            lines.append(f"- {c['body']} / {c['scenario']}: {c['executor_stage_counts']}；最大抬升 {c['macro_motion']['max_lift_m']:.6f} m。")
     lines+=['','这些是固定技能的开发比较，不是学习或迁移实验。联合压力条件不能分解各物理因素的因果作用。',
         '候选成功表示首次满足判据；留存完整时段不表示成功后始终稳定。原始轨迹位于运行目录，公开归档包含逐回合结果、计划、哈希和离线重算。',
-        f"总观察仿真时间 {audit['costs']['observed_sim_time_s']:.2f} s；累计回合壁钟 {audit['costs']['episode_wall_time_s']:.2f} s（共享 GPU，不作为吞吐基准）。",'']
+        f"总观察仿真时间 {audit['costs']['observed_sim_time_s']:.2f} s；累计回合壁钟（建场景至捕获最终结果，不含 teardown） {audit['costs']['episode_wall_time_s']:.2f} s（共享 GPU，不作为吞吐基准）。",'']
     (archive/'report.zh-CN.md').write_text('\n'.join(lines))
     plot(rows,archive)
     plot_trajectories(study,audit,archive)

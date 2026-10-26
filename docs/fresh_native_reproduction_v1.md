@@ -13,3 +13,20 @@
 ## 安装工具 v2 的修正
 
 首次尝试在下载/安装前因相对资产路径解析错误停止，没有物理调用，原目录与工具保留。资产清单的绝对路径指向共享缓存，相对路径则包括安装包内的 MDL 资源；前者继续共享，后者须在安装前以旧根目录核验、安装后以新根目录核验。v2 显式记录两种根目录并关联首次失败，不将新包资源的验证回退到旧安装。新的专用测试覆盖根目录解析和缺失资源必须失败。
+
+## 实际完成结果
+
+`FRESH_NATIVE_DEPENDENCY_REPRODUCTION_PASSED`。公开仓库的新 checkout 与新虚拟环境已实际安装，13 个阶段完成。Python 3.12.13，七个关键包版本与固定快照一致；17 个 editable 包的源码根目录和三个核心 import 路径均在新项目内，未链接旧 `.venv`。该安装的 `uv pip check` 检查 406 个包并保留原先七项冲突，没有将其称为全依赖无冲突。
+
+新环境的 v0.1 CPU 测试 93 项通过。两本体分别执行一个真实 PhysX 名义回合：
+
+| 本体 | 任务结果 | 完成时间（不含准备） | 留存轨迹离线重算 |
+|---|---|---:|---|
+| Franka/Panda | 成功 | 8.24 s | 与原生评分逐项一致 |
+| Franka/Robotiq | 成功 | 8.48 s | 与原生评分逐项一致 |
+
+两回合合计 17.72 秒仿真、181.37 秒回合墙钟；安装与完整检查共 552.94 秒墙钟。安装前在原根目录验证 483 项资产；安装后，绝对缓存路径继续共享，相对的包内 MDL 资源在新安装根目录验证，仍全部 483 项匹配。
+
+证据归档：[安装与检查报告](../evidence/reproduction/fresh_native_v2_20261026/report.json)、[实际回合与轨迹核对](../evidence/reproduction/fresh_native_v2_20261026/independent_review.json)、[完整阶段日志](../evidence/reproduction/fresh_native_v2_20261026/logs/)、[原失败尝试](../evidence/reproduction/fresh_native_20261026/review.json)。新环境实际位于 `/code/rosclaw/pebx-native-reproduction-v2-20261026/project/third_party/IsaacLab-Arena/.venv`，原始大轨迹保留在同级 reproduction 目录。
+
+本次补齐了“全新依赖安装 + 双本体名义 smoke”，没有重跑完整 pilot，也不是独立机器、独立资产获取或冷网络复现。候选测量采用与否、新正式版本冻结、固定抽样可视化与发布审查仍单列。

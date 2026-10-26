@@ -1,0 +1,7 @@
+Using Python 3.12.13 environment at: third_party/IsaacLab-Arena/.venv
+Resolved 1 package in 1ms
+   Building physicalevobench-x @ file:///code/rosclaw/pebx-native-reproduction-v2-20261026/project
+      Built physicalevobench-x @ file:///code/rosclaw/pebx-native-reproduction-v2-20261026/project
+Prepared 1 package in 686ms
+Installed 1 package in 1ms
+ + physicalevobench-x==0.1.0 (from file:///code/rosclaw/pebx-native-reproduction-v2-20261026/project)

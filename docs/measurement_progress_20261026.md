@@ -2,6 +2,8 @@
 
 当前分支 `implementation/v0.2-measurement` 是隔离开发轨道。v0.1 的冻结任务、控制器、数据与正式内部 pilot 结果均未替换；这里的“v0.2”尚不代表新的正式任务版本或发布。
 
+本文保留首轮 11 回合测量诊断的完成记录。后续已补齐 [全新依赖安装与双本体 smoke](fresh_native_reproduction_v1.md)，并推进 [物理步长/求解器敏感性矩阵](physics_sensitivity_v3.md)；最新验收状态见 [status](status.md)。
+
 ## 已完成的参数干预
 
 原分支的独立开发干预已完成 144/144 真实回合。两个本体的 Initial、Kimi 完整产物和 Random 完整产物均为 6/6，仅 Robotiq 的恢复抓取高度配置为 5/6，其余均为 6/6。12 对重复初值记录数组逐项一致，没有基础设施失败或未决调用。这批条件未复现 Panda 的旧负差，不能作单参数归因。详见 [原干预报告](intervention_results_20261026.md)。

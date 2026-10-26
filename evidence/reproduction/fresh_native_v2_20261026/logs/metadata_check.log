@@ -1,0 +1,10 @@
+Using Python 3.12.13 environment at: third_party/IsaacLab-Arena/.venv
+Checked 406 packages in 5ms
+Found 7 incompatibilities
+The package `openpi-client` requires `numpy>=1.22.4,<2.0.0`, but `2.3.1` is installed
+The package `simready-search` requires `requests>=2.32.5`, but `2.32.3` is installed
+The package `simready-search` requires `boto3==1.42.58`, but `1.40.61` is installed
+The package `isaacsim-core` requires `newton[sim]==1.5.0`, but `1.5.2` is installed
+The package `isaacsim-kernel` requires `websockets>=12.0,<15`, but `16.1.1` is installed
+The package `isaacsim-robot` requires `onnxruntime-gpu==1.26.0`, but it's not installed
+The package `ovphysx` requires `packaging>=20,<24`, but `26.0` is installed

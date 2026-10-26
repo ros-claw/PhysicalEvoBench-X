@@ -8,7 +8,7 @@ import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
 from validate_pose_native import verify
-from physicalevobench_x.core.hashing import file_digest,write_json
+from physicalevobench_x.core.hashing import digest,file_digest,write_json
 from physicalevobench_x.core.schemas import ObservationFrame
 from physicalevobench_x.control.geometry import rotate
 from physicalevobench_x.measurement.pose_window import PoseWindowJudge,load_pose_window_config
@@ -45,14 +45,23 @@ def audit(study,output):
     if (report['plan_hash']!=plan['plan_hash'] or report['unresolved_calls'] or
         report['completed_cases']!=plan['planned_calls'] or report['planned_cases']!=plan['planned_calls']):
         raise ValueError('Native diagnostic coverage incomplete')
+    expected={(body,job['name']) for body,jobs in plan['jobs'].items() for job in jobs}
+    if (len(report['results'])!=len(expected) or
+        {(r['body'],r['scenario']) for r in report['results']}!=expected or
+        report['formal_result_eligible'] is not False):raise ValueError('Report case coverage/scope mismatch')
     cases=[];all_matched=True;provenance={}
     for body,jobs in plan['jobs'].items():
+        identity=study/body/'journal/identity.json'
+        if json.loads(identity.read_text())!=dict(plan_hash=plan['plan_hash'],body=body):
+            raise ValueError('Journal plan identity mismatch')
+        provenance[str(identity)]=file_digest(identity)
         entries=sorted((study/body/'journal').glob('[0-9]*.json'))
         if len(entries)!=len(jobs):raise ValueError('Native journal coverage mismatch')
         for index,job in enumerate(jobs):
             journal=json.loads(entries[index].read_text())
             result_path=study/body/(job['name']+'.json');result=json.loads(result_path.read_text())
             if (journal['status']!='COMPLETE' or journal['request']!=dict(body=body,job=job) or
+                journal['request_hash']!=digest(journal['request']) or journal['physical'] is not True or
                 journal['result']!=result or result not in report['results'] or
                 result['backend']!='physx' or result['infra_failure'] is not None):
                 raise ValueError('Native journal/case/report mismatch')

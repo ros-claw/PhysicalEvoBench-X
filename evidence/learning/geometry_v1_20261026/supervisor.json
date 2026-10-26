@@ -1,0 +1,1 @@
+{"formal_result_eligible":false,"status":"DEVELOPMENT_LEARNING_EXECUTION_COMPLETE","workers":[{"gpu":0,"package":"random","process_wall_s":2464.327149229124,"returncode":0},{"gpu":1,"package":"kimi","process_wall_s":5944.9390273001045,"returncode":0}]}

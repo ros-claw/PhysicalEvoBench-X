@@ -35,3 +35,7 @@ PYTHONPATH=src /path/to/Arena/.venv/bin/python tools/report_geometry_learning_v1
 ```
 
 也可在 supervisor 启动后用 `finalize_geometry_learning_v1.py` 的 `--study`、`--archive` 和 `--native-python` 自动等待、审计及导出。输出目录和已有日志拒绝覆盖。审计仅重放已完成 journal，缺失记录时拒绝新增调用。`audit_geometry_learning_v1.py --package random` 可单独检查已完成包，但产生明确的 package 状态，不能替代全批完成声明。恢复 worker 前必须核对原日志及未决调用；手动 worker 的 Kimi 凭证需预设运行环境，不会从父 supervisor 自动恢复。
+
+## 完成结果：2026-10-26
+
+原定两包已完成 72 次物理调用，Random 回滚、Kimi 保留初值，独立源审计均 2/4→2/4，目标均 0/4→0/4。216 个评分重算一致。 每方法仅一个学习 seed、四个目标配对条件，仍为开发诊断。完整结果与限制见 [本轮学习进展](learning_progress_20261026.md)。

@@ -2,6 +2,8 @@
 
 Measuring whether newly acquired robot experience improves another embodiment under matched adaptation budgets.
 
+**This is the isolated `implementation/v0.2-measurement` development branch.** A pose-path-window candidate and censor-aware replay are implemented. Replaying 144 development traces observed 65 candidate successes and 79 censored records; these are not estimated success rates. Both Python environments passed 110 CPU tests. See [measurement progress and native validation](docs/measurement_progress_20261026.md). The frozen v0.1 results remain unchanged.
+
 The v0.1 track compares Franka/Panda Hand and Franka/Robotiq 2F-85 using a shared state-based StableLift executor. It measures the marginal effect of **SourceAfter versus SourceBefore**, under independent target budgets of 0, 5 and 20 episodes. This is near-embodiment parameter transfer, not a claim of arbitrary robot generalization.
 
 **Current status (2026-10-25): the frozen internal pilot completed all 12 learning packages and passed its full evidence audit.** It used 3,390 physical executions and 2,250 equivalent aliases. No positive target success-rate transfer was observed; ten source runs rolled back, one accepted update had zero target gain, and one produced negative transfer. Three learning seeds do not establish a population-level significance claim. See the [archived results](evidence/pilot_v0.1/report.md), [implementation status](docs/status.md), [next steps](docs/next_steps_20261025.md) and [中文说明](README.zh-CN.md). Release review, fixed-sample visualization and independent-installation reproduction remain pending.

@@ -96,7 +96,7 @@ def plot(rows,archive):
     fig.suptitle('Development distribution calibration: all 30 physical trials',fontsize=16,y=.97)
     fig.text(.5,.905,'Cell labels: candidate 50 Hz / candidate 200 Hz / legacy 50 Hz (S = success, F = failure)',ha='center',fontsize=10.5)
     fig.text(.5,.035,'Color: candidate 200 Hz first success. Time: task-relative first success; lift: maximum after settling.\nFixed skills; one trial per cell plus tall repeats. No learner, transfer or population estimate.',ha='center',fontsize=10)
-    fig.subplots_adjust(left=.105,right=.98,bottom=.13,top=.85,wspace=.36)
+    fig.subplots_adjust(left=.145,right=.985,bottom=.13,top=.85,wspace=.46)
     for ext in ('png','svg','pdf'):fig.savefig(archive/('all_cases.'+ext),dpi=170)
     plt.close(fig)
 

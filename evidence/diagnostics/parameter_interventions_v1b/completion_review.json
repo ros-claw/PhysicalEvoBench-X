@@ -1,0 +1,22 @@
+{
+  "files": {
+    "plan.json": "d7dbc81c2eb99bce7dc0c0ca9a5d8ba8a660c58e846635a20cee2a95c5f44936",
+    "report.json": "316063ce015c6f11eec8631037123281bc67a77487480663936678cb257af227",
+    "restart_lineage.json": "4fc254a559181b592958f3b3a1d72b23e977387984630af4e94c37fa7283b2ce",
+    "supervisor.json": "2b71243f66cff26448b735f500ba755707cc6d6c430be0cf2dd85c3b30781fdb"
+  },
+  "formal_result_eligible": false,
+  "physical_calls": 144,
+  "status": "INDEPENDENT_RECOMPUTATION_MATCHED",
+  "unresolved_calls": [],
+  "null_replay_npz_arrays_bitwise_equal": {
+    "franka_panda": {
+      "pairs": 6,
+      "equal": 6
+    },
+    "franka_robotiq": {
+      "pairs": 6,
+      "equal": 6
+    }
+  }
+}

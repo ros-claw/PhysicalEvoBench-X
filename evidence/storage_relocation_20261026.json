@@ -1,0 +1,9 @@
+{
+  "reason": "System partition full; return owned experiment records to /code with both historical paths preserved",
+  "canonical_path": "/code/rosclaw/physicalEvoBench_X/runs/complete-v2-20261023",
+  "alias_path": "/home/dell/pebx-experiments/complete-v2-20261023",
+  "system_free_bytes": 33128501248,
+  "updated_unix_s": 1792993596.5823007,
+  "files_verified_identical": 23914,
+  "post_relocation_frozen_audit_matched": true
+}

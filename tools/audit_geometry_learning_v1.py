@@ -54,7 +54,22 @@ def compare_preparation(a,b,*,actions):
         return rows
     left,right=prefix(a),prefix(b)
     covered=bool(left and right and abs(left[-1]['observation']['sim_time_s']-.5)<1e-9 and abs(right[-1]['observation']['sim_time_s']-.5)<1e-9)
-    return dict(left_rows=len(left),right_rows=len(right),settled_state_covered=covered,exactly_equal=bool(covered and left==right))
+    def deltas(a,b,prefix,values):
+        if isinstance(a,dict) and isinstance(b,dict):
+            for key in a.keys()&b.keys():deltas(a[key],b[key],prefix+'.'+key,values)
+        elif isinstance(a,(list,tuple)) and isinstance(b,(list,tuple)) and len(a)==len(b):
+            if all(type(x) in (int,float) for x in [*a,*b]):
+                difference=max((abs(x-y) for x,y in zip(a,b)),default=0.)
+                if difference:values[prefix]=max(values.get(prefix,0.),difference)
+        elif type(a) in (int,float) and type(b) in (int,float):
+            difference=abs(a-b)
+            if difference:values[prefix]=max(values.get(prefix,0.),difference)
+    differences={};settled={}
+    if len(left)==len(right):
+        for a,b in zip(left,right):deltas(a,b,'',differences)
+        if covered:deltas(left[-1],right[-1],'',settled)
+    return dict(left_rows=len(left),right_rows=len(right),settled_state_covered=covered,exactly_equal=bool(covered and left==right),
+        max_abs_numeric_differences=differences,settled_max_abs_numeric_differences=settled)
 
 
 def audit_model_calls(root,package,source):

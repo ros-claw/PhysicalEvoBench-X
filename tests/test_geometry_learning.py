@@ -76,4 +76,6 @@ def test_pair_preparation_ignores_identity_and_later_skill_effects_but_detects_i
     b.write_text(''.join(json.dumps(r)+'\n' for r in rows('b',2.)))
     assert compare_preparation(a,b,actions=True)['exactly_equal']
     b.write_text(''.join(json.dumps(r)+'\n' for r in rows('b',2.,start_value=1.001)))
-    assert not compare_preparation(a,b,actions=True)['exactly_equal']
+    result=compare_preparation(a,b,actions=True)
+    assert not result['exactly_equal']
+    assert result['max_abs_numeric_differences']['.observation.position']==pytest.approx(.001)

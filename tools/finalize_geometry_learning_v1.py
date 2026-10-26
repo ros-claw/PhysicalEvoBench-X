@@ -1,4 +1,4 @@
-"""Finalize the fixed 72-call development study once, with no hidden retries."""
+"""Finalize the fixed development study once, with no hidden retries."""
 import argparse
 import json
 import os

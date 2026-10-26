@@ -28,15 +28,17 @@ def build(study,archive):
         rows.append(row)
     with (archive/'all_physical_cases.csv').open('w',newline='') as f:
         w=csv.DictWriter(f,fieldnames=list(rows[0]),lineterminator='\n');w.writeheader();w.writerows(rows)
-    summary=dict(status=audit['status'],formal_result_eligible=False,physical_calls=len(rows),source_practice_calls=40,
+    summary=dict(status=audit['status'],formal_result_eligible=False,physical_calls=len(rows),source_practice_calls=20*len(audit['packages']),
         target_adaptation_calls=0,score_recomputations=audit['score_recomputation_count'],rate_disagreements=audit['rate_disagreements'],
         packages=audit['packages'],costs=audit['costs'],plan_hash=p['plan_hash'],limitations=audit['limitations'])
     write_json(archive/'summary.json',summary)
     candidates={};lines=['# 新几何任务：真实源学习与零预算迁移','',
         f"状态 `{audit['status']}`；{len(rows)} 次真实调用，{audit['score_recomputation_count']} 个评分重算；`formal_result_eligible=false`。",'',
-        'Panda→Robotiq；两种提案器、每种一个源学习 seed。每组 20 回合源练习，四个源审计配对、四个目标配对；目标适配 0 回合。即使源回滚，两侧仍实际执行，成本全部保留。','',
+        f"Panda→Robotiq；{len(audit['packages'])} 个提案器包，各一个源学习 seed。每组 20 回合源练习，四个源审计配对、四个目标配对；目标适配 0 回合。即使源回滚，两侧仍实际执行，成本全部保留。",'',
         '| 提案器 | 源验证接受 | 原因 | 源验证 Before→候选 | 独立源审计 Before→After | 目标 Before→After | 目标收益/退化条件数 |',
         '|---|---|---|---|---|---|---|']
+    if p.get('study')=='geometry_height_coverage_source_learning_v1':
+        lines.insert(4,'本包是看到两个源学习回滚后选择的高度覆盖诊断；使用全新条件，按原接受规则选择，不与原两种方法直接排名。')
     for package in audit['packages']:
         name=package['package']['package_id'];root=study/'packages'/name;dest=archive/name;dest.mkdir()
         paths={}
@@ -106,7 +108,7 @@ def save(fig,archive,name):
 
 
 def plot_source(audit,candidates,archive):
-    plt=plotting();fig,axes=plt.subplots(2,2,figsize=(12,7.2),sharex='col')
+    plt=plotting();columns=len(audit['packages']);fig,axes=plt.subplots(2,columns,figsize=(6*columns,7.2),sharex='col',squeeze=False)
     labels=['Height','Clearance','Settle','Lift speed','Lift acceleration']
     for col,pkg in enumerate(audit['packages']):
         name=pkg['package']['package_id'];rows=candidates[name];top,bottom=axes[:,col]
@@ -118,7 +120,7 @@ def plot_source(audit,candidates,archive):
             bottom.plot(range(6),[(r['skill']['parameters'][key]-lo)/(hi-lo) for r in rows],'.-',label=label,alpha=.85)
         bottom.set_ylim(-.05,1.05);bottom.set_xticks(range(6));bottom.set_xlabel('Candidate index (0 = original skill)');bottom.set_ylabel('Parameter within bound [0, 1]')
         for ax in (top,bottom):ax.grid(alpha=.2)
-    axes[1,1].legend(fontsize=8,loc='upper left')
+    axes[1,-1].legend(fontsize=8,loc='upper left')
     fig.suptitle('Actual budgeted source practice: every candidate and bounded parameter proposal')
     fig.text(.5,.018,'Dotted: training-selected candidate; validation separately accepts or rolls back. One learning seed; no method superiority estimate.',ha='center',fontsize=9)
     fig.tight_layout(rect=[0,.05,1,.95]);save(fig,archive,'source_learning')
@@ -127,7 +129,7 @@ def plot_source(audit,candidates,archive):
 def plot_pairs(audit,archive):
     import numpy as np
     from matplotlib.colors import ListedColormap
-    plt=plotting();fig,axes=plt.subplots(1,2,figsize=(12,10.8));cmap=ListedColormap(['#f3d6d4','#d2e8d8'])
+    plt=plotting();columns=len(audit['packages']);fig,axs=plt.subplots(1,columns,figsize=(6*columns,10.8),squeeze=False);axes=axs[0];cmap=ListedColormap(['#f3d6d4','#d2e8d8'])
     for ax,pkg in zip(axes,audit['packages']):
         name=pkg['package']['package_id'];data=np.zeros((8,2));grid={};labels=[]
         for row,case in enumerate([c for c in audit['cases'] if c['package_id']==name and c['stage'] in ('source_audit','target_zero')][::2]):
@@ -145,12 +147,12 @@ def plot_pairs(audit,archive):
     fig.suptitle('Independent paired checks after freezing source artifacts',fontsize=15)
     fig.text(.5,.935,'Top four rows: source audit (Panda). Bottom four: target evaluation (Robotiq), zero adaptation.',ha='center',fontsize=10)
     fig.text(.5,.025,'Color/time: candidate 50 Hz first success. Lift: full retained trace maximum. All failures retained.\nFour pairs per stage and one learning seed; development only, no population significance estimate.',ha='center',fontsize=9)
-    fig.subplots_adjust(left=.12,right=.98,top=.9,bottom=.085,wspace=.5);save(fig,archive,'all_paired_cases')
+    fig.subplots_adjust(left=.22 if columns==1 else .12,right=.98,top=.9,bottom=.085,wspace=.5);save(fig,archive,'all_paired_cases')
 
 
 def plot_target_traces(study,audit,archive):
     import numpy as np
-    plt=plotting();fig,axes=plt.subplots(4,2,figsize=(12,10),sharex=True,sharey=True)
+    plt=plotting();columns=len(audit['packages']);fig,axes=plt.subplots(4,columns,figsize=(6*columns,10),sharex=True,sharey=True,squeeze=False)
     for col,pkg in enumerate(audit['packages']):
         name=pkg['package']['package_id'];cases=[c for c in audit['cases'] if c['package_id']==name and c['stage']=='target_zero']
         for row in range(4):
@@ -164,7 +166,7 @@ def plot_target_traces(study,audit,archive):
             if col==0:ax.set_ylabel('Object lift (m)')
             if row==3:ax.set_xlabel('Target task elapsed time (s)')
     axes[0,0].legend(fontsize=8);fig.suptitle('Zero-budget target evaluation: every before/after height trajectory')
-    fig.text(.5,.018,'Curves may overlap. Dotted: 8 cm lift; height alone is not the stability score. No target feedback was used for source selection.',ha='center',fontsize=9)
+    fig.text(.5,.018,'Curves may overlap. Dotted: 8 cm lift; height alone is not the stability score.\nNo target feedback was used for source selection.',ha='center',fontsize=9)
     fig.tight_layout(rect=[0,.05,1,.95]);save(fig,archive,'target_height_trajectories')
 
 

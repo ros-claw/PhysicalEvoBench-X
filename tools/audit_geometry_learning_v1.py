@@ -76,7 +76,7 @@ def audit_model_calls(root,package,source):
     path=root/'model_calls.jsonl';calls=[json.loads(l) for l in path.read_text().splitlines()] if path.exists() else []
     proposals=[json.loads(f.read_text()) for f in sorted((root/'stages/source/journal/proposals').glob('[0-9]*.json'))]
     if len(proposals)!=5:raise ValueError('Source proposer budget mismatch')
-    if package['learner']=='random_search_v1' and calls:raise ValueError('Random baseline made model calls')
+    if package['learner']!='bounded_llm_v1' and calls:raise ValueError('Random baseline made model calls')
     candidates=[json.loads(l)['skill'] for l in (source/'candidates.jsonl').read_text().splitlines()]
     episodes=[EpisodeResult.model_validate_json(l) for l in (source/'episode_results.jsonl').read_text().splitlines()]
     histories=[];expected_requests=[]
@@ -142,6 +142,8 @@ def audit_model_calls(root,package,source):
 
 def audit(study,output,replay_root,package_id=None):
     p,m=verify(study)
+    for name,h in p.get('extension_inputs',{}).items():
+        if file_digest(ROOT/name)!=h:raise ValueError('Study extension input changed')
     selected=[x for x in p['packages'] if package_id is None or x['package_id']==package_id]
     if not selected:raise ValueError('Unknown package for audit')
     if package_id is None:
@@ -230,7 +232,15 @@ def audit(study,output,replay_root,package_id=None):
             native_manifest_sha256=file_digest(source/'native_evidence_manifest.json'))
         if json.loads((root/'artifact_freeze.json').read_text())!=expected_freeze:raise ValueError('Post-learning artifact freeze mismatch')
         replay_dir=replay_root/package['package_id']
-        proposer=RandomSearch if package['learner']=='random_search_v1' else lambda seed:NoExecution()
+        if package['learner']=='height_grid_v1':
+            from learn_height_coverage_v1 import HeightGrid,grid,verify as verify_height
+            verify_height(study);proposer=HeightGrid
+            candidates=[json.loads(line)['skill'] for line in (source/'candidates.jsonl').read_text().splitlines()]
+            expected=[SkillSpec.initial().model_dump()]
+            for height in grid():
+                data=SkillSpec.initial().model_dump();data['parameters']['grasp_height_fraction']=height;expected.append(data)
+            if candidates!=expected:raise ValueError('Coverage candidate/grid or fixed fields changed')
+        else:proposer=RandomSearch if package['learner']=='random_search_v1' else lambda seed:NoExecution()
         # Re-run the unchanged learning algorithm against read-only source journals.
         physical=ReadOnlyJournal(root/'stages/source/journal/physical',identity)
         proposals=ReadOnlyJournal(root/'stages/source/journal/proposals',identity)
@@ -298,7 +308,7 @@ def audit(study,output,replay_root,package_id=None):
         source_report_sha256=file_digest(study/'report.json') if report is not None else None,evidence_files=evidence,
         score_recomputation_count=3*len(cases),rate_disagreements=sum(c['outcomes']['candidate_50hz']['task_success']!=c['outcomes']['candidate_200hz']['task_success'] for c in cases),
         auditor_sha256=file_digest(__file__),limitations=[p['interpretation'],p['environment_scope'],
-            'One direction, two learners and one source-learning seed; no population significance or method superiority inference.',
+            'One direction and one source-learning seed per package; no population significance or method superiority inference.',
             'No no-feedback proposal control in this batch; model-prior/search and feedback contributions are not separately isolated.',
             'Full-horizon diagnostic observation costs are charged even after first success; completion-time improvements do not imply measured simulation-cost savings.',
             'Offline reuse of judges and learner code checks retained-record consistency; not an independent physical oracle.',

@@ -53,6 +53,7 @@ def build(study,archive):
         f"总观察仿真时间 {audit['costs']['observed_sim_time_s']:.2f} s；累计回合壁钟 {audit['costs']['episode_wall_time_s']:.2f} s（共享 GPU，不作为吞吐基准）。",'']
     (archive/'report.zh-CN.md').write_text('\n'.join(lines))
     plot(rows,archive)
+    plot_trajectories(study,audit,archive)
     write_json(archive/'archive_manifest.json',dict(formal_result_eligible=False,
         files={str(p.relative_to(archive)):file_digest(p) for p in archive.rglob('*') if p.is_file()}))
     return summary
@@ -90,6 +91,39 @@ def plot(rows,archive):
     fig.text(.5,.035,'Color: candidate 200 Hz first success. Time: task-relative first success; lift: maximum after settling.\nFixed skills; one trial per cell plus tall repeats. No learner, transfer or population estimate.',ha='center',fontsize=10)
     fig.subplots_adjust(left=.105,right=.98,bottom=.13,top=.85,wspace=.36)
     for ext in ('png','svg','pdf'):fig.savefig(archive/('all_cases.'+ext),dpi=170)
+    plt.close(fig)
+
+
+def plot_trajectories(study,audit,archive):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    fig,axes=plt.subplots(4,2,figsize=(12,11),sharex=True,sharey=True)
+    colors=dict(initial='#3569a5',high_grasp='#b15d1c',slow_lift='#428553')
+    conditions=['nominal','tall_narrow','wide','heavy_low_friction']
+    for i,condition in enumerate(conditions):
+        for j,body in enumerate(['franka_panda','franka_robotiq']):
+            ax=axes[i,j]
+            for case in audit['cases']:
+                if case['body']!=body or case['condition']!=condition:continue
+                path=study/body/case['scenario']/'control_trace.jsonl'
+                obs=[json.loads(line)['observation'] for line in path.read_text().splitlines()]
+                t=np.array([o['sim_time_s'] for o in obs]);z=np.array([o['object_pose_w']['position_m'][2] for o in obs])
+                initial=np.flatnonzero(abs(t-.5)<1e-9)[0];lift=z-z[initial]
+                ax.plot(t[initial:]-.5,lift[initial:],color=colors[case['variant']],
+                    linestyle='--' if case['repeat_of'] else '-',linewidth=1.6,alpha=.9,
+                    label=case['variant'].replace('_',' ') if not case['repeat_of'] else None)
+            ax.axhline(.08,color='#555555',linestyle=':',linewidth=1)
+            ax.set_title(body.replace('franka_','').title()+' / '+condition.replace('_',' '),fontsize=11)
+            ax.set_xlim(0,15);ax.set_ylim(-.18,.2);ax.grid(alpha=.2)
+            if j==0:ax.set_ylabel('Object lift (m)')
+            if i==3:ax.set_xlabel('Task elapsed time (s)')
+    axes[0,0].legend(loc='upper left',fontsize=8)
+    fig.suptitle('Full retained height trajectories: every skill and condition',fontsize=15)
+    fig.text(.5,.015,'Dotted: 8 cm lift requirement. Dashed: predeclared tall repeats (may overlap). Height alone is not stable-lift success.\nDevelopment only; complete observations include task failures and measured safety stops.',ha='center',fontsize=9)
+    fig.tight_layout(rect=[0,.055,1,.965])
+    for ext in ('png','svg','pdf'):fig.savefig(archive/('height_trajectories.'+ext),dpi=170)
     plt.close(fig)
 
 

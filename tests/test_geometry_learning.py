@@ -40,3 +40,18 @@ def test_wrong_native_identity_rejected(experiment,field,value):
         candidate_50hz={},candidate_200hz={},native_50hz={})
     raw[field]=value
     with pytest.raises(ValueError,match='identity'):experiment.validate_raw(raw,'franka_panda',c,'episode')
+
+
+def test_offline_journal_normalizes_json_and_never_appends_missing_calls(experiment,tmp_path,monkeypatch):
+    root=Path(__file__).resolve().parents[1];monkeypatch.syspath_prepend(str(root/'tools'))
+    from audit_geometry_learning_v1 import ReadOnlyJournal
+    identity=dict(plan_hash='unit-test-only')
+    experiment.write_json(tmp_path/'identity.json',identity)
+    request=dict(history=[dict(constraint_violations=())])
+    experiment.write_json(tmp_path/'00000.json',dict(status='COMPLETE',physical=False,
+        request=request,request_hash=experiment.digest(request),result=dict(skill='unit-test-only')))
+    before={p.name:p.read_bytes() for p in tmp_path.iterdir()}
+    journal=ReadOnlyJournal(tmp_path,identity)
+    assert journal.call(request,lambda:pytest.fail('audit executed a proposal'))==dict(skill='unit-test-only')
+    with pytest.raises(FileNotFoundError):journal.call({},lambda:pytest.fail('audit executed a missing call'))
+    assert before=={p.name:p.read_bytes() for p in tmp_path.iterdir()}

@@ -40,3 +40,17 @@ def test_plan_retains_baseline_and_balanced_repeats(calibration,tmp_path):
     path=tmp_path/'study/plan.json';changed=json.loads(path.read_text());changed['jobs']['franka_panda'].pop()
     path.write_text(json.dumps(changed))
     with pytest.raises(ValueError,match='changed'):calibration.verify(tmp_path/'study')
+
+
+def test_repeat_comparison_excludes_only_identity_and_catches_action_drift(monkeypatch,tmp_path):
+    root=Path(__file__).resolve().parents[1];monkeypatch.syspath_prepend(str(root/'tools'))
+    from audit_distribution_v1 import compare_traces
+    a=tmp_path/'a';b=tmp_path/'b'
+    row=dict(observation=dict(episode_id='first',sim_time_s=1.,object_size_m=[.035,.035,.14]),native_action=[0.,1.])
+    a.write_text(json.dumps(row)+'\n');row['observation']['episode_id']='repeat';b.write_text(json.dumps(row)+'\n')
+    assert compare_traces(a,b,actions=True)['exactly_equal']
+    row['native_action'][0]=.01;b.write_text(json.dumps(row)+'\n')
+    assert not compare_traces(a,b,actions=True)['exactly_equal']
+    assert compare_traces(a,b,actions=False)['exactly_equal']
+    b.write_text('')
+    assert compare_traces(a,b,actions=True)['mismatched_rows']==1

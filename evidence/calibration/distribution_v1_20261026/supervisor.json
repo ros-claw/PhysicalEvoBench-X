@@ -1,0 +1,1 @@
+{"formal_result_eligible":false,"status":"CALIBRATION_EXECUTION_COMPLETE","workers":[{"body":"franka_panda","process_wall_s":951.3329906798899,"returncode":0},{"body":"franka_robotiq","process_wall_s":2075.1881286143325,"returncode":0}]}

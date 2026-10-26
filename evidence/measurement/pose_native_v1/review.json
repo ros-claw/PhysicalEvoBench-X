@@ -1,0 +1,15 @@
+{
+  "formal_result_eligible": false,
+  "status": "NATIVE_CANDIDATE_DIAGNOSTICS_FAILED",
+  "completed_cases": 9,
+  "controls_passed": 8,
+  "selected_disagreement_expectation_met": false,
+  "infra_failures": 0,
+  "unresolved_calls": [],
+  "files": {
+    "supervisor.json": "5070b70ffec4145483c454705a2581262d26ba71514ffc671d44be60dda9136e",
+    "trace_audit.json": "27b6356722b5f957b4b8c2057e21bedfef3fa36270bb1d8fd1af91c987dfd69c",
+    "plan.json": "5a447aef340712860e0c0adb68346af7737d5f4e1e511c44882847b85634702a",
+    "report.json": "d02d44db4536c0d96f465712f8f3a5a71ea08a87afb8f61cf842447f88c32817"
+  }
+}

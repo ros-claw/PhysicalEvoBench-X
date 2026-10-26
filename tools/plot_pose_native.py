@@ -55,6 +55,20 @@ def plot(study,output):
     fig.suptitle('All eight fixed native controls — development measurement checks')
     for ext in ('png','svg','pdf'):fig.savefig(output/f'native_controls.{ext}',dpi=160)
     plt.close(fig)
+    fig,axes=plt.subplots(2,2,figsize=(10,6),sharex=True,constrained_layout=True)
+    for row,body in enumerate(('franka_panda','franka_robotiq')):
+        t,_,_,_,linear=traces[(body,'oscillate')]
+        path=study/body/'oscillate/physics_trace.jsonl'
+        xyz=np.array([json.loads(line)['observation']['object_pose_w']['position_m'] for line in path.read_text().splitlines()])
+        axes[row,0].plot(t-.5,(xyz[:,0]-xyz[np.argmin(abs(t-.5)),0])*1000,lw=1.)
+        axes[row,0].set_ylabel(f"{body.removeprefix('franka_')} x change (mm)")
+        axes[row,1].plot(t-.5,linear,lw=1.);axes[row,1].axhline(.03,color='#a33e31',ls='--',lw=.8)
+        axes[row,1].set_ylabel('Position path / 0.1 s (m/s)')
+    for ax in axes.flat:ax.grid(alpha=.2);ax.set_xlim(0,15)
+    for ax in axes[-1]:ax.set_xlabel('Task time (s)')
+    fig.suptitle('Both fixed oscillation controls: observed object motion and path-speed threshold')
+    for ext in ('png','svg','pdf'):fig.savefig(output/f'oscillation_controls.{ext}',dpi=160)
+    plt.close(fig)
     key=('franka_robotiq','development_disagreement');t,lift,native,angular,linear=traces[key]
     fig,axes=plt.subplots(3,1,figsize=(9,7),sharex=True,constrained_layout=True)
     axes[0].plot(t-.5,lift*1000,label='Observed object lift');axes[0].axhline(80,color='#a33e31',ls='--',lw=.8)
@@ -65,7 +79,7 @@ def plot(study,output):
     axes[2].plot(t-.5,linear,label='Observed position path / 0.1 s window')
     axes[2].axhline(.03,color='#a33e31',ls='--',lw=.8);axes[2].set_ylabel('Path speed (m/s)');axes[2].set_xlabel('Task time (s)')
     for ax in axes:ax.grid(alpha=.2);ax.legend(loc='upper right');ax.set_xlim(0,15)
-    fig.suptitle('Selected development disagreement: measurement comparison, not learner improvement')
+    fig.suptitle('Previously selected development case — v1 rerun: both judges accept')
     for ext in ('png','svg','pdf'):fig.savefig(output/f'development_disagreement.{ext}',dpi=160)
     plt.close(fig)
     with (output/'cases.csv').open('w') as stream:

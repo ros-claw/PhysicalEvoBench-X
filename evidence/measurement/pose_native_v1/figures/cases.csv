@@ -1,0 +1,10 @@
+body,scenario,candidate_50hz_success,candidate_200hz_success,native_50hz_success,candidate_50hz_completion_s,candidate_200hz_completion_s,stimulus_confirmed,validation_passed
+franka_panda,nominal,True,True,True,8.18,8.175,True,True
+franka_panda,toss,False,False,False,15.0,15.0,True,True
+franka_panda,release,False,False,False,15.0,15.0,True,True
+franka_panda,oscillate,False,False,False,15.0,15.0,True,True
+franka_robotiq,nominal,True,True,True,8.5,8.49,True,True
+franka_robotiq,toss,False,False,False,15.0,15.0,True,True
+franka_robotiq,release,False,False,False,15.0,15.0,True,True
+franka_robotiq,oscillate,False,False,False,15.0,15.0,True,True
+franka_robotiq,development_disagreement,True,True,True,7.5,7.485,True,False

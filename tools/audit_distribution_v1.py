@@ -99,6 +99,8 @@ def audit(study,output):
         audit_tools={name:file_digest(ROOT/'tools'/name) for name in ('audit_distribution_v1.py','audit_pose_native.py','audit_pose_physics_v3.py','state_consistency_metrics.py')},
         limitations=['Offline reuse of judge checks consistency; not an independent physical oracle.',
             'Only the tall condition has predeclared physical repeats; other contrasts are one paired trial per cell.',
+            'Repeats share the same host, condition and reset seed; exact equality is reset reproducibility, not multi-seed or machine robustness.',
+            'High-grasp and slow-lift skills were authored before execution, not acquired by a learner.',
             'Initial successes are first terminal decisions, not certification of continuous success through the full horizon.',
             p['interpretation'],'No new formal distribution, held-out learning, LLM effect, positive transfer or population inference.'])
     if output.exists():raise ValueError('Audit output already exists; retain prior attempt')

@@ -10,6 +10,8 @@
 
 **物理解释边界：** 原生探针发现接触约束下 PhysX 报告角速度与姿态变化率显著不同。上述负迁移指冻结原生状态判据上的负差，不能直接证明物体持续宏观旋转或通用物理技能退化；见 [状态语义核查](docs/state_semantics_20261025.md)。新参数干预使用独立开发条件，不能事后改变原结果。
 
+**2026-10-26 开发进展：** [144 回合独立参数干预](docs/intervention_results_20261026.md) 已全部完成，无基础设施失败或未决调用，未复现 Panda 的原负差。新的姿态轨迹测量候选在 [独立开发分支](https://github.com/ros-claw/PhysicalEvoBench-X/tree/implementation/v0.2-measurement) 实施，不修改本分支冻结输入，也不重报原 pilot。
+
 本机开发命令：
 
 ```bash
@@ -24,6 +26,6 @@ pebx skill-check examples/skills/initial_v2.json
 
 已实现最终验收、双向批次、阶段续跑和独立报告审计；这些工程功能须先经过当前物理修订的最终验收，再冻结并运行完整 pilot，不会生成占位成功率。
 
-已验证的原生安装与命令见 [原生运行环境](docs/native_runtime.md)，真实模型配置和用量见 [Kimi K3 接入](docs/kimi_k3.md)。当前 CPU 契约测试为 84 项，CPU 与仿真环境均通过。
+已验证的原生安装与命令见 [原生运行环境](docs/native_runtime.md)，真实模型配置和用量见 [Kimi K3 接入](docs/kimi_k3.md)。当前 v0.1 CPU 契约测试为 93 项，CPU 与仿真环境均通过。
 
 2026-10-23 更新：v2 的 46 个开发范围测点已完成（Panda 21/23，Robotiq 23/23），失败全部保留。最终配置同时显式设置 root/link solver，仍需重新验收。`pebx run` 已接入最终验收、工程闭环 smoke、每本体 100 回合吞吐、冻结和完整双向 pilot；`pebx evaluate`、`pebx report` 也已接入。详见 [运行与续跑](docs/pilot_execution.md)。正式实验是否完成以独立审计和真实结果为准。

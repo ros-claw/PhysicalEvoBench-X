@@ -8,6 +8,8 @@ The v0.1 track compares Franka/Panda Hand and Franka/Robotiq 2F-85 using a share
 
 **Interpretation caveat:** native probes found that constrained PhysX-reported angular velocity can differ strongly from pose evolution. Negative transfer here is a decrease under the frozen native-state success predicate, not established evidence of sustained macroscopic spinning or general physical skill degradation. See the [state-semantics investigation](docs/state_semantics_20261025.md). Parameter interventions remain separate development diagnostics.
 
+**Development update (2026-10-26):** all [144 independent parameter-intervention episodes](docs/intervention_results_20261026.md) completed without infrastructure failures or unresolved calls; the Panda pilot deficit did not recur in this batch. A pose-path measurement candidate is being developed on the [isolated measurement branch](https://github.com/ros-claw/PhysicalEvoBench-X/tree/implementation/v0.2-measurement), preserving this branch's frozen inputs and pilot results.
+
 ## CPU development
 
 ```bash

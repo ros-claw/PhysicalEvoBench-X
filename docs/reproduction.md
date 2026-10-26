@@ -1,10 +1,10 @@
 # Reproduction
 
-The frozen internal pilot completed all twelve learning packages and passed the full frozen-evidence audit on 2026-10-25. [Archived results](../evidence/pilot_v0.1/report.md) include zero and negative transfer; no positive target success-rate transfer was observed. Release review and independent-installation reproduction remain pending. Audit eligibility does not certify positive transfer, arbitrary robot generalization or isolation against malicious submissions.
+The frozen internal pilot completed all twelve learning packages and passed the full frozen-evidence audit on 2026-10-25. [Archived results](../evidence/pilot_v0.1/report.md) include zero and negative transfer; no positive target success-rate transfer was observed. Release review remains pending; the fresh dependency installation and two nominal PhysX smoke cases passed on 2026-10-26, with shared caches and the same host explicitly retained. Audit eligibility does not certify positive transfer, arbitrary robot generalization or isolation against malicious submissions.
 
 ## CPU
 
-Use Python 3.12 and `pip install -r requirements-cpu.lock.txt`, then `pytest -q`. The separate CPU environment uses Python 3.12.7; the native simulation environment uses 3.12.13 and its upstream-locked dependencies. The latest CPU check passes 87 tests, including three tests of the completed-package review tool. A CPU test result never certifies physics.
+Use Python 3.12 and `pip install -r requirements-cpu.lock.txt`, then `pytest -q`. The separate CPU environment uses Python 3.12.7; the native simulation environment uses 3.12.13 and its upstream-locked dependencies. The fresh v0.1 installation passes 93 CPU tests; the isolated measurement development branch additionally tests its experimental tools. A CPU test result never certifies physics.
 
 ## Native simulation
 
@@ -51,3 +51,5 @@ The tool captures the completed package set once, verifies checkpoints, request 
 Docker remains an alternative implementation path whose image download/build has not been validated here. Native provenance is recorded honestly without inventing a container digest.
 
 On 2026-10-24, a separate local clone of project commit `d2e1c13` ran one nominal episode per embodiment successfully. Import provenance confirmed the package came from the new clone. This reused the pinned upstream checkout, installed native environment and cached assets, with the upstream directory explicitly linked into the clone. It is a clean **project-source** smoke, not a clean dependency installation or independent-machine replication. [Evidence and checksums](../evidence/reproduction/source_smoke_20261024.json) record both physical episodes separately from the formal pilot.
+
+[Fresh dependency-installation evidence](https://github.com/ros-claw/PhysicalEvoBench-X/blob/implementation/v0.2-measurement/docs/fresh_native_reproduction_v1.md) records a new public-source checkout and a newly installed virtual environment, 93 CPU checks, two successful nominal PhysX episodes with retained-state score replay, the seven scoped metadata exceptions and 483 verified assets/package resources. This is a warm-cache fresh installation on the same host; the complete pilot and independent-machine behavior were not rerun.

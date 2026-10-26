@@ -83,7 +83,7 @@ def plot(study,output):
     for ext in ('png','svg','pdf'):fig.savefig(output/f'development_disagreement.{ext}',dpi=160)
     plt.close(fig)
     with (output/'cases.csv').open('w') as stream:
-        writer=csv.writer(stream);writer.writerow(['body','scenario','candidate_50hz_success','candidate_200hz_success','native_50hz_success','candidate_50hz_completion_s','candidate_200hz_completion_s','stimulus_confirmed','validation_passed'])
+        writer=csv.writer(stream,lineterminator='\n');writer.writerow(['body','scenario','candidate_50hz_success','candidate_200hz_success','native_50hz_success','candidate_50hz_completion_s','candidate_200hz_completion_s','stimulus_confirmed','validation_passed'])
         for r in report['results']:
             a,b,c=(r[k] for k in ('candidate_50hz','candidate_200hz','native_50hz'))
             writer.writerow([r['body'],r['scenario'],a['task_success'],b['task_success'],c['task_success'],a['completion_time_s'],b['completion_time_s'],r['stimulus_confirmed'],r['passed']])
@@ -93,7 +93,43 @@ def plot(study,output):
         caveat='All eight predefined controls plus one explicitly post-hoc selected development case; no formal pilot rescoring.'))
 
 
+def plot_preparation(study,output):
+    report=json.loads((study/'report.json').read_text());audit=json.loads((study/'trace_audit.json').read_text())
+    comparison=json.loads((study/'preparation_comparison.json').read_text())
+    if (audit['status']!='TRACE_RECOMPUTATION_PASSED' or audit['source_report_sha256']!=file_digest(study/'report.json')
+        or comparison['source_report_sha256']!=file_digest(study/'report.json')):raise ValueError('Matched trace audit and comparison required')
+    if output.exists():raise ValueError('Figure destination exists')
+    output.mkdir(parents=True);provenance={}
+    plt.rcParams.update({'font.size':9,'pdf.fonttype':42,'svg.fonttype':'none'})
+    fig,axes=plt.subplots(3,2,figsize=(12,8),sharex=True,sharey='row',constrained_layout=True)
+    for col,name in enumerate(('matched_original_settle','fixed_tcp_settle')):
+        r=next(r for r in report['results'] if r['scenario']==name)
+        path=study/'franka_robotiq'/name/'physics_trace.jsonl'
+        if file_digest(path)!=r['evidence_files'][str(path)]:raise ValueError('Preparation plot source changed')
+        provenance[str(path)]=file_digest(path);t,lift,native,angular,linear=load_trace(path)
+        axes[0,col].plot(t-.5,lift*1000);axes[0,col].axhline(80,color='#a33e31',ls='--',lw=.8)
+        old='accept' if r['native_50hz']['task_success'] else 'reject'
+        new='accept' if r['candidate_50hz']['task_success'] else 'reject'
+        label='Original zero relative action' if col==0 else 'Fixed initial TCP reference'
+        axes[0,col].set_title(f'{label}\nNative: {old}; candidate: {new}')
+        axes[1,col].plot(t-.5,native,label='PhysX-reported angular speed',lw=1.)
+        axes[1,col].plot(t-.5,angular,label='Pose path / 0.1 s window',lw=1.)
+        axes[1,col].axhline(.5,color='#a33e31',ls='--',lw=.8);axes[1,col].legend(loc='upper right')
+        axes[2,col].plot(t-.5,linear);axes[2,col].axhline(.03,color='#a33e31',ls='--',lw=.8)
+        axes[2,col].set_xlabel('Task time (s)')
+    for ax in axes.flat:ax.grid(alpha=.2);ax.set_xlim(0,15)
+    axes[0,0].set_ylabel('Lift (mm)');axes[1,0].set_ylabel('Angular speed (rad/s)');axes[2,0].set_ylabel('Position path / 0.1 s (m/s)')
+    fig.suptitle('One selected development condition: only the initial 0.5 s arm action differs')
+    for ext in ('png','svg','pdf'):fig.savefig(output/f'preparation_comparison.{ext}',dpi=160)
+    plt.close(fig)
+    write_json(output/'manifest.json',dict(formal_result_eligible=False,source_report_sha256=file_digest(study/'report.json'),
+        audit_sha256=file_digest(study/'trace_audit.json'),comparison_sha256=file_digest(study/'preparation_comparison.json'),
+        tool_sha256=file_digest(__file__),source_files=provenance,artifacts={p.name:file_digest(p) for p in output.iterdir()},
+        caveat='Two controlled reruns of a single post-hoc selected development condition; no population or transfer-effect estimate.'))
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--study',type=Path,required=True)
+    parser.add_argument('--mode',choices=['controls','preparation'],default='controls')
     parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
-    plot(args.study.resolve(),args.output.resolve())
+    (plot if args.mode=='controls' else plot_preparation)(args.study.resolve(),args.output.resolve())

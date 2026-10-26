@@ -1,4 +1,5 @@
 # Preserve raw simulator logs (including terminal progress output) as evidence.
 evidence/**/*.log -whitespace
+evidence/**/*.svg -whitespace
 
 *.csv text eol=lf

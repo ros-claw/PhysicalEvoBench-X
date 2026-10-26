@@ -1,0 +1,14 @@
+{
+  "status": "CLEAN_CHECKOUT_PUBLIC_PLAN_INPUTS_MATCHED",
+  "formal_result_eligible": false,
+  "native_physical_calls": 0,
+  "original_plan_hash": "4850b3a94aa981bf56e681906523404ecfd2a844b2f96d9d9d267c923f1c63e7",
+  "new_plan_hash": "31c03d4b68f4fded90937bbd5f5fb7549d3b3494dbe1d5bf0f57298644370c50",
+  "case_count": 44,
+  "all_44_jobs_identical": true,
+  "profiles_and_measurement_config_identical": true,
+  "source_checkout_commit": "dc17a9c",
+  "new_source_root": "/code/rosclaw/pebx-public-physics-input-check-20261026",
+  "caveat": "Input and plan generation check only; this is not an additional physical experiment or independent-machine result.",
+  "source_plan_sha256": "58bcfc0273dada129d41b9740fbd158894e022f2d04c9a2cef66fa4891c76a94"
+}

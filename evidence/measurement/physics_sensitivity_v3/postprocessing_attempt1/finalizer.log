@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/finalize_physics_v3.py", line 73, in <module>
+    try:finalize(a.study.resolve(),a.archive.resolve(),a.native_python)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/finalize_physics_v3.py", line 29, in finalize
+    subprocess.run([sys.executable,str(ROOT/'tools/audit_pose_physics_v3.py'),'--study',str(study),'--output',str(study/'trace_audit.json')],
+  File "/home/dell/anaconda3/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/code/rosclaw/physicalEvoBench_X/.venv312/bin/python', '/code/rosclaw/physicalEvoBench_X_v02/tools/audit_pose_physics_v3.py', '--study', '/code/rosclaw/physicalEvoBench_X_v02/runs/pose-physics-v3-20261026', '--output', '/code/rosclaw/physicalEvoBench_X_v02/runs/pose-physics-v3-20261026/trace_audit.json']' returned non-zero exit status 1.

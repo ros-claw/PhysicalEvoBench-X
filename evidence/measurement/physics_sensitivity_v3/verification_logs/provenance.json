@@ -1,0 +1,8 @@
+{
+  "formal_result_eligible": false,
+  "scope": "CPU tests only; physical results are audited separately",
+  "source_commit": "a9f5df42cc6833eae5284f97b264e23857c2a36b",
+  "cpu_test_count": 122,
+  "native_environment_cpu_test_count": 122,
+  "execution_source_and_tests_clean": true
+}

@@ -1,0 +1,23 @@
+{
+  "status": "SCOPED_PHYSICS_MEASUREMENT_CHECKS_PASSED",
+  "formal_result_eligible": false,
+  "configuration_probes": 8,
+  "full_horizon_tasks": 36,
+  "total_native_calls": 44,
+  "all_native_validation_checks_passed": true,
+  "retained_state_audit_passed": true,
+  "all_motion_stimulus_flags_match_uncensored_trace": true,
+  "observation_rate_disagreements": 0,
+  "max_positive_completion_difference_s": 0.015000000000000568,
+  "original_baseline_arrays_and_public_observations_equal": true,
+  "offline_postprocessing_attempts": 2,
+  "physical_reruns_due_to_offline_audit_fix": 0,
+  "figures_visually_reviewed": true,
+  "figures": {
+    "profile_matrix.png": "1b34cf71aada32d71b463049f4e43be4ad92941df361940be1df27650c8adc85",
+    "selected_case_profiles.png": "79df9a7ebcb166935c867933c0ad044fdbfe9442849bdeb862ec72fb8d898b09"
+  },
+  "source_report_sha256": "c857b62f1988ca5f79fc989e018dc3bad7aaca85a591b5e4066ede8bc8310a55",
+  "trace_audit_sha256": "377f10d0828d48e77576516e325d6806e7d4c94cd398f5acedce9573accc995b",
+  "limits": "Fixed controls and one selected development condition only; 200 Hz observation, no learner gains, default judge unchanged, no new formal freeze"
+}

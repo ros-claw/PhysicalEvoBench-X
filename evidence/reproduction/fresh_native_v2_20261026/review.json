@@ -30,6 +30,7 @@
     "logs/franka_panda_smoke.log": "bc74f4b9e10dba2288e3062804e26ae50bccce04fedb8cfeaabe6fd095893a41",
     "logs/upstream_source.log": "3610aefb700745853c324e31f1700621c67ca7436e9381bc78181c312b066fd1",
     "logs/lab_transport.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "logs/uv_sync.log": "1cac710d79e885dd36d214a3c08406679022d7c71668894548a3a676f115a31f"
+    "logs/uv_sync.log": "1cac710d79e885dd36d214a3c08406679022d7c71668894548a3a676f115a31f",
+    "audit_attempts.json": "3efaf9ca91d44535ed46a7341e81489804e656cc382728101b53e5c63f7ff108"
   }
 }

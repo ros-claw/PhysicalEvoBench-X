@@ -1,0 +1,8 @@
+{
+  "status": "OFFLINE_AUDIT_SERIALIZATION_FAILURE_RETAINED",
+  "formal_result_eligible": false,
+  "new_physical_calls": 0,
+  "cause": "NumPy boolean in the full-horizon audit flag could not pass the strict JSON serializer",
+  "resolution": "Convert time-audit flags to built-in booleans; preserve native data and rerun offline audit only",
+  "regression_test": "tests/test_physics_trace_audit.py::test_numpy_clock_audit_flags_cross_the_strict_json_boundary"
+}

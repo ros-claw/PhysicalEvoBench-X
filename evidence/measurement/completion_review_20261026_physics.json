@@ -1,0 +1,25 @@
+{
+  "status": "PHYSICS_SENSITIVITY_AND_FRESH_INSTALLATION_COMPLETE",
+  "formal_result_eligible": false,
+  "development_cpu_tests": 122,
+  "fresh_frozen_v01_cpu_tests": 93,
+  "new_native_calls": 46,
+  "configuration_only_calls": 8,
+  "sensitivity_full_horizon_calls": 36,
+  "fresh_install_nominal_calls": 2,
+  "new_llm_calls": 0,
+  "total_observed_sim_time_s": 576.04,
+  "physical_infrastructure_failures": 0,
+  "unresolved_physical_calls": 0,
+  "source_baseline_775_public_states_and_arrays_exact": true,
+  "fresh_dependency_reproduction": "PASSED_WITH_SAME_HOST_AND_SHARED_CACHES",
+  "original_12_package_frozen_audit_rechecked_and_matched": true,
+  "default_judge_changed": false,
+  "new_formal_benchmark_frozen": false,
+  "positive_transfer_demonstrated": false,
+  "files": {
+    "measurement/physics_sensitivity_v3/archive_manifest.json": "5e07408cacf68b1f8bbc7c7ac55e7eac4e185f5cec4f5bc84310900302b7fe17",
+    "measurement/physics_sensitivity_v3/review.json": "5eb2d630054e5859e84bbc9c32a3fb2664973888621a4562e6572068e5ad9152",
+    "reproduction/fresh_native_v2_20261026/review.json": "10d4b07db1db7195feb1172f9adf533a9584d8f3c6103cc61fa370b57d8e62d4"
+  }
+}

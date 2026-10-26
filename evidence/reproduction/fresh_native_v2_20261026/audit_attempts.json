@@ -1,0 +1,18 @@
+{
+  "formal_result_eligible": false,
+  "new_physical_calls_due_to_audit_retry": 0,
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "AUDITOR_COMPARISON_TYPE_ERROR",
+      "reason": "Typed constraint tuple and equivalent JSON list compared without JSON normalization",
+      "raw_output_location": "Captured in the interaction tool result; not retained as a separate filesystem log",
+      "implementation_state": "Corrected before the first audit-tool commit; no source physical records changed"
+    },
+    {
+      "attempt": 2,
+      "status": "FRESH_NATIVE_DEPENDENCY_REPRODUCTION_PASSED",
+      "retained_report": "independent_review.json"
+    }
+  ]
+}

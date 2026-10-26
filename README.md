@@ -2,9 +2,11 @@
 
 Measuring whether newly acquired robot experience improves another embodiment under matched adaptation budgets.
 
-**This is the isolated `implementation/v0.2-measurement` development branch.** A pose-path-window candidate and censor-aware replay are implemented. Replaying 144 development traces observed 65 candidate successes and 79 censored records; these are not estimated success rates. Both Python environments passed 121 CPU tests. See [measurement progress and native validation](docs/measurement_progress_20261026.md). The frozen v0.1 results remain unchanged.
+**This is the isolated `implementation/v0.2-measurement` development branch.** A pose-path-window candidate and censor-aware replay are implemented. Replaying 144 development traces observed 65 candidate successes and 79 censored records; these are not estimated success rates. Both Python environments passed 122 CPU tests. See [measurement progress and native validation](docs/measurement_progress_20261026.md). The frozen v0.1 results remain unchanged.
 
 Eleven native diagnostic calls completed: eight fixed controls passed, while the initial nine-case study failed its selected-case disagreement expectation and is retained. Two subsequent paired preparation-action diagnostics matched their predeclared expectations; 775 steps of four recorded arrays exactly reproduce the original development trajectory and its measurement disagreement. The candidate remains experimental and supplies no evidence of learner gains.
+
+**Further validation (2026-10-26):** all 44 physics-step/solver calls completed: eight configuration probes and 36 full-horizon controls met their declared checks. Candidate classifications agreed at 50/200 Hz, with a maximum successful completion-time difference of 15 ms. A fresh dependency installation also passed both nominal smoke cases. See [physics results, public inputs and limits](docs/physics_sensitivity_v3.md); the default judge and frozen pilot remain unchanged.
 
 The v0.1 track compares Franka/Panda Hand and Franka/Robotiq 2F-85 using a shared state-based StableLift executor. It measures the marginal effect of **SourceAfter versus SourceBefore**, under independent target budgets of 0, 5 and 20 episodes. This is near-embodiment parameter transfer, not a claim of arbitrary robot generalization.
 

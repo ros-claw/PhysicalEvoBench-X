@@ -1,0 +1,1 @@
+{"formal_result_eligible":false,"status":"NATIVE_CANDIDATE_DIAGNOSTICS_PASSED","workers":[{"body":"franka_panda","process_wall_s":1424.978339813184,"returncode":0},{"body":"franka_robotiq","process_wall_s":3515.0314339757897,"returncode":0}]}

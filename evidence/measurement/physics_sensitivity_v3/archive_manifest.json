@@ -1,0 +1,30 @@
+{
+  "formal_result_eligible": false,
+  "files": {
+    "supervisor.json": "e947c8cc823f192e48145c4759cdc61d733c554ca43d0c2262fdee5e3220e994",
+    "public_input_plan_review.json": "d95a3735152481eb549da1fea6c6f09eb9e3afeccfbc27c94282e5810b95077d",
+    "trace_audit.json": "377f10d0828d48e77576516e325d6806e7d4c94cd398f5acedce9573accc995b",
+    "plan.json": "f1361d750ac5760da9781a971ca939d2184eb3b48a6c40565dc4c8ce0e518b69",
+    "source_development_case.json": "72fdeba0a0ad6b4cbeaca8829157aac88c02196214923a80708f99ff6fc12312",
+    "summary.json": "fd1ca5d9b67d2e22ab30aa8f81b46c356e0c95517712b933dffec51d9b4c8049",
+    "report.json": "c857b62f1988ca5f79fc989e018dc3bad7aaca85a591b5e4066ede8bc8310a55",
+    "review.json": "5eb2d630054e5859e84bbc9c32a3fb2664973888621a4562e6572068e5ad9152",
+    "baseline_source_comparison.json": "5cce2a0e4a8e503afef6c7966e3f48040f952a65d5a35495bde9639261b47918",
+    "report.zh-CN.md": "784840c41293e41da8245778e2e149c50b6f300c9b11d288876f4b3a690c62ea",
+    "postprocessing_attempt1/trace_audit.log": "58d01239141d5114c200981413cd368590a2f2e1e5a1d85296a197bbf0089c3e",
+    "postprocessing_attempt1/finalizer.log": "887c15de5610a9b405f46f28e39c68f6adf27d568936903eb3db7c9f8abf9ee6",
+    "postprocessing_attempt1/review.json": "2589dcedcfdaebd2fa7c417b65b9da4e2a71108bb80c8dd9bfef1c71471fa4b9",
+    "postprocessing_attempt1/status.json": "8eb9ab3b78989391953f75ed7a3a478f4d109f840a96fd79659edb33de2ba16d",
+    "figures/profile_matrix.png": "1b34cf71aada32d71b463049f4e43be4ad92941df361940be1df27650c8adc85",
+    "figures/profile_matrix.pdf": "79ad9e80ae3dc18de812927d280b6c4aa0bd90134dfcc97eb07d8fdb7b761239",
+    "figures/profile_matrix.svg": "03ea1eaf3e3a0761fe4a1685d6698190c5b1544bb1c785d55579ba21997147f4",
+    "figures/selected_case_profiles.pdf": "5eb51ed21c960684c1ebdaf06dcf897a6c7e6a2dc8d672ac3ebf567291895172",
+    "figures/all_cases.csv": "b31eab17fe29d0910b25b8b3d891a003c0cf61fc964c2004d4bba982eae67c11",
+    "figures/selected_case_profiles.svg": "5656d66dcb081df4b1884d752ca5c3f5ac723b8fea3fff7b8478d63503dbc0a9",
+    "figures/manifest.json": "82fcbe04688068742ea3b4b0986e746ec52e183dfdf8094d280dd439001d608a",
+    "figures/selected_case_profiles.png": "79df9a7ebcb166935c867933c0ad044fdbfe9442849bdeb862ec72fb8d898b09",
+    "verification_logs/cpu_tests.log": "5b37cddd2c15e23597bd10471864144050347d4907623492a244f336300af399",
+    "verification_logs/native_env_cpu_tests.log": "69d9f4598ba8570de05a5ca63ba765ae53b745b83bbace50b2a45a537f8f2212",
+    "verification_logs/provenance.json": "4699a2bfafe9a4d802a5067e0e43664f74c3d5a9e71cb1bc91dcc6dacb1c2078"
+  }
+}

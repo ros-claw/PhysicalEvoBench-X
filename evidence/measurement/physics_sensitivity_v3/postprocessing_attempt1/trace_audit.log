@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/audit_pose_physics_v3.py", line 122, in <module>
+    args=p.parse_args();r=audit(args.study.resolve(),args.output.resolve());print(json.dumps(dict(status=r['status'],coverage=r['coverage'])))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/audit_pose_physics_v3.py", line 117, in audit
+    write_json(output,result);return result
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/src/physicalevobench_x/core/hashing.py", line 24, in write_json
+    path.write_text(canonical(value) + '\n', encoding='utf-8')
+                    ^^^^^^^^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/src/physicalevobench_x/core/hashing.py", line 10, in canonical
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/anaconda3/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/home/dell/anaconda3/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/anaconda3/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/home/dell/anaconda3/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type bool is not JSON serializable

@@ -19,6 +19,8 @@ def build(study,archive):
         shutil.copyfile(study/name,archive/name)
     if (study/'verification_logs').exists():shutil.copytree(study/'verification_logs',archive/'verification_logs')
     if (study/'public_plan_review.json').exists():shutil.copyfile(study/'public_plan_review.json',archive/'public_plan_review.json')
+    for name in ('random_source_progress_review.json','kimi_model_progress_review.json','random_package_audit.json','random_package_audit.log','random_preparation_review.json'):
+        if (study/name).exists():shutil.copyfile(study/name,archive/name)
     rows=[]
     for c in audit['cases']:
         row={k:c[k] for k in ('package_id','stage','body','episode_id','condition_id','stratum','phase','candidate_index','skill_hash','role')}
@@ -65,6 +67,13 @@ def build(study,archive):
         if nulls:
             exact=sum(x['control']['exactly_equal'] and x['physics']['exactly_equal'] for x in nulls)
             lines+=['',f"{name} 回滚后的真实同产物配对：{exact}/{len(nulls)} 对公开状态/实际动作精确一致。"]
+    lines+=['','## 准备状态检查','']
+    for package in audit['packages']:
+        checks=package['preparation_checks'];exact=sum(c['control']['exactly_equal'] and c['physics']['exactly_equal'] for c in checks);differences={}
+        for c in checks:
+            for key in ('control','physics'):
+                for field,value in c[key]['max_abs_numeric_differences'].items():differences[field]=max(differences.get(field,0.),value)
+        lines.append(f"- {package['package']['package_id']}: 全字段精确一致 {exact}/{len(checks)}；其余已观测最大数值差 {differences}。未事后引入容差将这些标成精确一致，未改变成绩或源产物。")
     lines+=['','## 真实模型调用与成本','']
     for package in audit['packages']:
         calls=package['model_calls']

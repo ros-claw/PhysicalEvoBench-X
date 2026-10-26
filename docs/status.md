@@ -2,6 +2,8 @@
 
 ## 最新进展：2026-10-26
 
+隔离开发分支已完成新的分布校准：30 次预声明调用及单列的 3 次事后选择复现，共 33 次真实物理调用、99 个评分重算和九对精确状态/动作复现。细高物体上，高抓取让两个夹爪由初值失败变为成功；Robotiq 宽物体上，高抓取反而使初值成功变为失败，后续复现一致。该开发结果证明存在可测参数差异及物体/夹爪相关的权衡，仍不证明学习或正迁移；配置是预先人工指定的。无物理重试、基础设施失败或未决调用，开发分支两环境各 130 项 CPU 测试通过，图表与轨迹重算已检查。详见 [设计、全部结果与限制](https://github.com/ros-claw/PhysicalEvoBench-X/blob/implementation/v0.2-measurement/docs/distribution_calibration_v1.md)。本分支冻结源码、配置、默认评分及原 pilot 结果未变动，不将新开发成绩回填至 v0.1，不创建正式新版本或 release tag。
+
 独立依赖安装检查已补齐：公开仓库固定 `66a093e` 的新 checkout、新建原生虚拟环境通过 93 项 CPU 测试，两本体各一个真实名义回合成功且离线评分重算一致；483 项资产/新包资源核验通过，七项元数据例外仍保留。这是同机共享下载/资产缓存的全新安装，不是独立机器或完整 pilot 重跑。详见 [复现证据和范围](https://github.com/ros-claw/PhysicalEvoBench-X/blob/implementation/v0.2-measurement/docs/fresh_native_reproduction_v1.md)。隔离测量分支的物理步长/求解器矩阵已完成 44/44 调用并通过全部预声明检查及留存轨迹重算，50/200 Hz 分类无分歧、成功时间最大差 15 ms；公开输入在干净工作树生成的 44 个任务一致，开发分支 122 项 CPU 测试通过。详见 [完整结果和限制](https://github.com/ros-claw/PhysicalEvoBench-X/blob/implementation/v0.2-measurement/docs/physics_sensitivity_v3.md)。未改变本分支冻结输入、默认 judge 或旧结果，未声称正迁移。
 
 隔离的 `implementation/v0.2-measurement` 分支已完成姿态路径窗口候选、144 条截断感知开发重放及 11 次新原生诊断。8 个正反例通过，首次 9 回合整批因选定病例未复现而失败并保留；随后 2 回合匹配准备动作对照符合预期，原准备动作下 775 步四组数组与原轨迹逐项完全相同，复现该病例上的测量分歧。新分支 CPU 两环境各 110 项通过；本分支冻结审计仍与原 12 包归档一致。详见 [隔离分支的完整证据和限制](https://github.com/ros-claw/PhysicalEvoBench-X/blob/implementation/v0.2-measurement/docs/measurement_progress_20261026.md)。未替换本分支默认判据，不宣称学习收益或新正式版本已冻结。

@@ -55,3 +55,11 @@ def test_offline_journal_normalizes_json_and_never_appends_missing_calls(experim
     assert journal.call(request,lambda:pytest.fail('audit executed a proposal'))==dict(skill='unit-test-only')
     with pytest.raises(FileNotFoundError):journal.call({},lambda:pytest.fail('audit executed a missing call'))
     assert before=={p.name:p.read_bytes() for p in tmp_path.iterdir()}
+
+
+def test_public_export_rejects_nested_exact_conditions_but_allows_scalar_results(monkeypatch):
+    root=Path(__file__).resolve().parents[1];monkeypatch.syspath_prepend(str(root/'tools'))
+    from report_geometry_learning_v1 import check_public
+    check_public(dict(cases=[dict(condition_id='id',task_success=False,max_lift_m=0.)]))
+    with pytest.raises(ValueError,match='private condition'):
+        check_public(dict(projection=[dict(condition_id='id',reset_seed=123,size_m=[.035,.035,.14])]))

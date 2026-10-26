@@ -178,6 +178,7 @@ def audit(study,output,replay_root):
                 completed[r.episode_id]=raw_dir;stage_results[name].append(r)
                 cases.append(dict(package_id=package['package_id'],stage=name,body=body,episode_id=r.episode_id,condition_id=r.condition_id,
                     stratum=request['condition']['name'],phase=r.phase,candidate_index=r.candidate_index,skill_hash=r.skill_hash,
+                    role=('exploration' if index<12 else 'validation_before' if index<16 else 'validation_candidate') if name=='source' else ('before' if index%2==0 else 'after'),
                     outcomes=outcomes,clocks=clock,safety_stop=safety,macro_motion=motion_summary(cr,pr,'nominal'),
                     executor_stage_counts={v:sum(row.get('executor_stage')==v for row in cr) for v in sorted({row['executor_stage'] for row in cr if 'executor_stage' in row})}))
                 costs['known_complete_physical_calls']+=1;costs['observed_sim_time_s']+=r.sim_time_s;costs['episode_wall_time_s']+=r.wall_time_s

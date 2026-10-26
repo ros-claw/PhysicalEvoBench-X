@@ -40,7 +40,13 @@ def replay(path,config,limits,*,native=False):
 
 
 def audit(study,output):
-    plan=verify(study);config=load_pose_window_config(ROOT/'configs/measurement/pose_path_candidate_v1.yaml')
+    study_type=json.loads((study/'plan.json').read_text())['study']
+    if study_type=='pose_window_matched_settle_diagnostic_v2':
+        from validate_pose_native_v2 import verify as verify_matched
+        plan=verify_matched(study)
+    elif study_type=='pose_window_native_validation_v1':plan=verify(study)
+    else:raise ValueError('Unknown native diagnostic version')
+    config=load_pose_window_config(ROOT/'configs/measurement/pose_path_candidate_v1.yaml')
     report=json.loads((study/'report.json').read_text())
     if (report['plan_hash']!=plan['plan_hash'] or report['unresolved_calls'] or
         report['completed_cases']!=plan['planned_calls'] or report['planned_cases']!=plan['planned_calls']):

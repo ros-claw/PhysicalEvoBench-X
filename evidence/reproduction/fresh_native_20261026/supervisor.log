@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/reproduce_native_install.py", line 146, in <module>
+    else:run(args.directory.resolve())
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/reproduce_native_install.py", line 75, in run
+    before=assets(d)
+           ^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/tools/reproduce_native_install.py", line 45, in assets
+    if file_digest(path)!=record['sha256']:raise ValueError('Shared asset differs from locked inventory: '+path)
+       ^^^^^^^^^^^^^^^^^
+  File "/code/rosclaw/physicalEvoBench_X_v02/src/physicalevobench_x/core/hashing.py", line 18, in file_digest
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/anaconda3/lib/python3.12/pathlib.py", line 1019, in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/home/dell/anaconda3/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'third_party/IsaacLab-Arena/.venv/lib/python3.12/site-packages/isaacsim/kit/mdl/core/.packman.lock'

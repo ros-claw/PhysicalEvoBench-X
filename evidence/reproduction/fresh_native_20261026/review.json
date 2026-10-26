@@ -1,0 +1,11 @@
+{
+  "status": "STOPPED_BEFORE_DOWNLOAD_OR_INSTALL",
+  "formal_result_eligible": false,
+  "native_physical_calls": 0,
+  "reason": "Repository-relative package resources resolved against the development worktree instead of an explicit original installation root",
+  "files": {
+    "plan.json": "4effaddabe3a01e278dd4b83436e9ee02a3dece880eb25b6d8d080ac9945e72a",
+    "supervisor.log": "45f01f14e00e9100a7f4ae72b5c4a79594c83f4019604a48dfc8e90069dc3a7a",
+    "status.json": "e079ddaadf3efe5d6040f689abb56c6db0ab55c284c6ca773ea39922c56646f8"
+  }
+}

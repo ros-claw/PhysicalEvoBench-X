@@ -1,0 +1,14 @@
+version: pose_path_window_candidate_v1
+status: CANDIDATE_NOT_PHYSICALLY_VALIDATED
+formal_result_eligible: false
+lift_m: 0.08
+hold_s: 1.0
+drift_m: 0.015
+drift_rad: 0.2617993877991494
+linear_speed_mps: 0.03
+angular_speed_radps: 0.5
+timeout_s: 15.0
+window_s: 0.10
+max_gap_s: 0.025
+velocity_source: observed_world_pose_path_length
+default_benchmark_judge_replaced: false

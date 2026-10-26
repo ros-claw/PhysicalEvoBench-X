@@ -17,3 +17,21 @@
 所有调用经过不可覆盖 journal。已完成调用可重建 projection；不确定 STARTED 调用停止且保留，不自动重复。原始逐步轨迹和精确条件 manifest 位于忽略的 runs；公开报告仅发布 split hash、条件 ID/stratum、经验参数、实际成绩、成本和证据 hash，不提交私有目标条件。
 
 离线报告还逐项比较相同条件在技能开始前的 .5 s 准备状态及实际动作，分别覆盖探索候选、源验证和两种配对评测。若存在差异则显式报告，不丢弃该回合或事后回滚产物。完整时段观察在首次成功后仍继续收费，因此任务完成时间改善不能直接宣称本批仿真成本节省。本批没有无反馈提案消融，不单独识别模型先验、搜索与物理反馈各自的贡献。
+
+## 执行与复现
+
+干净源码即可生成相同 split 的 canonical hash、初值、预算和执行设置，无需旧 runs。精确条件文件仅写入新运行目录。首次执行前安装 CPU 项目依赖，原生环境按依赖锁与独立安装说明准备；使用虚拟环境路径本身，不解析到系统解释器。
+
+```bash
+PYTHONPATH=src /path/to/cpu/python tools/learn_geometry_v1.py plan --study runs/new-geometry-learning
+ACCEPT_EULA=Y PYTHONPATH=src /path/to/cpu/python tools/learn_geometry_v1.py run \
+  --study runs/new-geometry-learning --gpus 0 1 \
+  --native-python /path/to/Arena/.venv/bin/python --credential-file /secure/path/.env
+PYTHONPATH=src /path/to/cpu/python tools/audit_geometry_learning_v1.py \
+  --study runs/new-geometry-learning --output runs/new-geometry-learning/trace_audit.json \
+  --replay-root runs/new-geometry-learning/audit-replay
+PYTHONPATH=src /path/to/Arena/.venv/bin/python tools/report_geometry_learning_v1.py \
+  --study runs/new-geometry-learning --archive evidence/learning/new-geometry-learning
+```
+
+也可在 supervisor 启动后用 `finalize_geometry_learning_v1.py` 的 `--study`、`--archive` 和 `--native-python` 自动等待、审计及导出。输出目录和已有日志拒绝覆盖。审计仅重放已完成 journal，缺失记录时拒绝新增调用。`audit_geometry_learning_v1.py --package random` 可单独检查已完成包，但产生明确的 package 状态，不能替代全批完成声明。恢复 worker 前必须核对原日志及未决调用；手动 worker 的 Kimi 凭证需预设运行环境，不会从父 supervisor 自动恢复。

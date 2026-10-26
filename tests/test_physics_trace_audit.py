@@ -1,6 +1,8 @@
 """Keep scope/clamping verification and post-termination stimulus evidence honest."""
 import importlib.util
 import math
+import json
+import numpy as np
 from pathlib import Path
 import pytest
 
@@ -23,6 +25,14 @@ def test_solver_readback_rejects_wrong_scope_and_scene_clamp(auditor):
     assert not auditor.configuration_matches(settings,profile)
     settings['dynamic_bodies'][0]['position']=128;settings['scenes'][0]['max_position']=64
     assert not auditor.configuration_matches(settings,profile)
+
+
+def test_numpy_clock_audit_flags_cross_the_strict_json_boundary(auditor):
+    ct=np.arange(776)*.02;pt=np.arange(1,3101)*.005
+    result=auditor.trace_clock_summary(ct,pt,np.float64(15.5),3100)
+    assert json.loads(json.dumps(result,allow_nan=False))==dict(clocks_verified=True,full_horizon=True)
+    pt[500]+=.001
+    assert not auditor.trace_clock_summary(ct,pt,np.float64(15.5),3100)['clocks_verified']
 
 
 def test_stimulus_audit_includes_late_motion_after_early_stable_segment(auditor,observation):

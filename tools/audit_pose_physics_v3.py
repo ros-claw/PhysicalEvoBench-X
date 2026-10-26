@@ -13,6 +13,15 @@ from physicalevobench_x.measurement.pose_window import load_pose_window_config
 ROOT=Path(__file__).resolve().parents[1]
 
 
+def trace_clock_summary(control_times,observer_times,observed_sim_time,expected_samples):
+    ct=np.asarray(control_times);pt=np.asarray(observer_times)
+    if len(ct)<2 or len(pt)<2:raise ValueError('Missing retained clock samples')
+    return dict(clocks_verified=bool(np.allclose(np.diff(ct),.02,atol=1e-9,rtol=0)
+        and np.allclose(np.diff(pt),.005,atol=1e-9,rtol=0)
+        and len(pt)==expected_samples and abs(pt[-1]-observed_sim_time)<1e-9),
+        full_horizon=bool(abs(pt[-1]-15.5)<1e-9 and abs(ct[-1]-15.5)<1e-9))
+
+
 def configuration_matches(settings,profile):
     rows=settings['articulations']+settings['dynamic_bodies'];scenes=settings['scenes']
     return bool(settings['articulations'] and settings['dynamic_bodies'] and scenes and
@@ -87,8 +96,8 @@ def audit(study,output):
             cr=[json.loads(line) for line in control.read_text().splitlines()]
             pr=[json.loads(line) for line in physics.read_text().splitlines()]
             ct=np.array([row['observation']['sim_time_s'] for row in cr]);pt=np.array([row['observation']['sim_time_s'] for row in pr])
-            clocks=bool(np.allclose(np.diff(ct),.02,atol=1e-9,rtol=0) and np.allclose(np.diff(pt),.005,atol=1e-9,rtol=0)
-                and len(pr)==r['physics_samples'] and abs(pt[-1]-r['observed_sim_time_s'])<1e-9)
+            clock_summary=trace_clock_summary(ct,pt,r['observed_sim_time_s'],r['physics_samples'])
+            clocks=clock_summary['clocks_verified']
             case=dict(body=body,profile=job['profile'],scenario=job['scenario'],source_validation_passed=r['passed'],clocks_verified=clocks)
             if job['scenario']=='configuration_probe':
                 matched=bool(len(cr)==2 and len(pr)==8 and abs(pt[-1]-.04)<1e-9 and
@@ -98,7 +107,7 @@ def audit(study,output):
                 a=replay(control,config,r['effective_joint_limits']);b=replay(physics,config,r['effective_joint_limits'])
                 old=replay(control,config,r['effective_joint_limits'],native=True)
                 matched=(a['terminal']==r['candidate_50hz'] and b['terminal']==r['candidate_200hz'] and old['terminal']==r['native_50hz'])
-                full=abs(pt[-1]-15.5)<1e-9 and abs(ct[-1]-15.5)<1e-9
+                full=clock_summary['full_horizon']
                 safety=bool(r['terminal']['result']['constraint_violations'])
                 motion=motion_summary(cr,pr,job['scenario'])
                 case.update(kind='FULL_HORIZON',candidate_50hz=a['terminal'],candidate_200hz=b['terminal'],native_50hz=old['terminal'],

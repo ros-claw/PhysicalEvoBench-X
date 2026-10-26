@@ -1,0 +1,10 @@
+{
+  "formal_result_eligible": false,
+  "report_sha256": "ceea1723c7d2def3dddacb6a51b53200dfaa8111766853135f4e23ed8f1822db",
+  "cpu_tests": 110,
+  "native_environment_cpu_tests": 110,
+  "observed_successes": 65,
+  "censored": 79,
+  "observed_failures": 0,
+  "interpretation": "Censored replay observations, not estimated task success rates; no learner change."
+}

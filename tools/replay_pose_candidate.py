@@ -12,13 +12,14 @@ sys.path.insert(0,str(ROOT/'scripts'))
 from physicalevobench_x.core.hashing import digest,file_digest,write_json
 from physicalevobench_x.core.schemas import ObservationFrame,EpisodeResult,SkillSpec
 from physicalevobench_x.control.geometry import rotate
-from physicalevobench_x.measurement.pose_window import PoseWindowJudge
+from physicalevobench_x.measurement.pose_window import PoseWindowJudge,load_pose_window_config
 from physicalevobench_x.sim.judge import robot_hard_failures
 from pilot_suite import execution_inputs
 
 
-def replay_frames(initial,frames,joint_limits):
-    judge=PoseWindowJudge();judge.reset(initial)
+def replay_frames(initial,frames,joint_limits,config=None):
+    judge=PoseWindowJudge() if config is None else PoseWindowJudge(config)
+    judge.reset(initial)
     for obs in frames:
         if obs.sim_time_s<initial.sim_time_s:continue
         axes=[rotate(obs.object_pose_w.quaternion_xyzw,np.eye(3)[i]) for i in range(3)]
@@ -30,6 +31,7 @@ def replay_frames(initial,frames,joint_limits):
 
 
 def replay(study,original_root,output):
+    config=load_pose_window_config(ROOT/'configs/measurement/pose_path_candidate_v1.yaml')
     plan=json.loads((study/'plan.json').read_text())
     if plan['plan_hash']!=digest({k:v for k,v in plan.items() if k!='plan_hash'}):
         raise ValueError('Source diagnostic plan changed')
@@ -64,7 +66,7 @@ def replay(study,original_root,output):
             terminal=ObservationFrame.model_validate(meta['terminal']['observation'])
             if not frames or terminal.sim_time_s>frames[-1].sim_time_s:frames.append(terminal)
             candidate=replay_frames(ObservationFrame.model_validate(meta['initial']),frames,
-                                    meta['effective_robot']['joint_position_limits'])
+                                    meta['effective_robot']['joint_position_limits'],config)
             status=('CENSORED_AT_RECORDED_END' if candidate is None else
                     'SUCCESS_OBSERVED' if candidate['task_success'] else 'FAILURE_OBSERVED')
             cases.append(dict(body=body,variant=job['variant'],condition_index=plan['conditions'].index(job['condition']),
@@ -81,7 +83,7 @@ def replay(study,original_root,output):
     result=dict(status='DEVELOPMENT_SHADOW_REPLAY_COMPLETE',formal_result_eligible=False,
         scope='Offline replay of predeclared development records only; not new physical executions or revised pilot scores',
         source_plan_hash=plan['plan_hash'],source_review_sha256=file_digest(review),
-        candidate_config=asdict(PoseWindowJudge().config),
+        candidate_config=asdict(config),
         candidate_inputs={str(p.relative_to(ROOT)):file_digest(p) for p in
             [ROOT/'src/physicalevobench_x/measurement/pose_window.py',Path(__file__).resolve(),
              ROOT/'configs/measurement/pose_path_candidate_v1.yaml']},

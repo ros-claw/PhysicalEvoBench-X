@@ -4,7 +4,7 @@ This class is not registered as the benchmark judge. It requires separate
 physical validation and a new protocol freeze before any formal experiment.
 """
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass,fields
 import math
 import numpy as np
 from ..control.geometry import angle, relative
@@ -26,10 +26,25 @@ class PoseWindowConfig:
     def __post_init__(self):
         values=[self.lift_m,self.hold_s,self.drift_m,self.drift_rad,self.linear_speed_mps,
                 self.angular_speed_radps,self.timeout_s,self.window_s,self.max_gap_s]
-        if any(not math.isfinite(v) or v<=0 for v in values):
+        if any(type(v) not in (int,float) or not math.isfinite(v) or v<=0 for v in values):
             raise ValueError('Positive finite measurement settings required')
+        if self.version!='pose_path_window_candidate_v1':
+            raise ValueError('Unsupported measurement candidate version')
         if not self.max_gap_s<=self.window_s<=self.hold_s<self.timeout_s:
             raise ValueError('Require max_gap <= window <= hold < timeout')
+
+
+def load_pose_window_config(path):
+    import yaml
+    from pathlib import Path
+    data=yaml.safe_load(Path(path).read_text())
+    metadata={'status','formal_result_eligible','velocity_source','default_benchmark_judge_replaced'}
+    if (not isinstance(data,dict) or set(data)!={f.name for f in fields(PoseWindowConfig)}|metadata
+        or data['status']!='CANDIDATE_NOT_PHYSICALLY_VALIDATED'
+        or data['formal_result_eligible'] is not False or data['default_benchmark_judge_replaced'] is not False
+        or data['velocity_source']!='observed_world_pose_path_length'):
+        raise ValueError('Invalid experimental measurement configuration')
+    return PoseWindowConfig(**{k:v for k,v in data.items() if k not in metadata})
 
 
 class PoseWindowJudge:

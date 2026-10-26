@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 from physicalevobench_x.core.schemas import Pose
-from physicalevobench_x.measurement.pose_window import PoseWindowJudge,PoseWindowConfig
+from physicalevobench_x.measurement.pose_window import PoseWindowJudge,PoseWindowConfig,load_pose_window_config
 
 
 def frame(observation,t,*,height=.2,x=.5,yaw=0.,sign=1.,native_spin=10.):
@@ -95,3 +95,14 @@ def test_sampling_rate_comparison_for_the_same_observed_trajectory(observation):
 def test_reject_invalid_candidate_settings():
     with pytest.raises(ValueError):PoseWindowConfig(window_s=2.)
     with pytest.raises(ValueError):PoseWindowConfig(max_gap_s=0.)
+
+
+def test_candidate_yaml_values_are_consumed_and_unknown_fields_rejected(tmp_path):
+    from pathlib import Path
+    import yaml
+    data=yaml.safe_load((Path(__file__).parents[1]/'configs/measurement/pose_path_candidate_v1.yaml').read_text())
+    data['window_s']=.2
+    path=tmp_path/'measurement.yaml';path.write_text(yaml.safe_dump(data))
+    assert load_pose_window_config(path).window_s==.2
+    data['extra_hidden_default']=True;path.write_text(yaml.safe_dump(data))
+    with pytest.raises(ValueError):load_pose_window_config(path)

@@ -41,6 +41,21 @@ class NoExecution:
     def propose(self,*args):raise RuntimeError('Offline audit must never call a model')
 
 
+def compare_preparation(a,b,*,actions):
+    def prefix(path):
+        rows=[]
+        with path.open() as stream:
+            for line in stream:
+                row=json.loads(line);o=dict(row['observation']);t=o['sim_time_s']
+                if t>.5+1e-12:break
+                o.pop('episode_id',None)
+                rows.append(dict(observation=o,action=row.get('native_action') if actions and t<.5-1e-12 else None))
+        return rows
+    left,right=prefix(a),prefix(b)
+    covered=bool(left and right and abs(left[-1]['observation']['sim_time_s']-.5)<1e-9 and abs(right[-1]['observation']['sim_time_s']-.5)<1e-9)
+    return dict(left_rows=len(left),right_rows=len(right),settled_state_covered=covered,exactly_equal=bool(covered and left==right))
+
+
 def audit_model_calls(root,package,source):
     path=root/'model_calls.jsonl';calls=[json.loads(l) for l in path.read_text().splitlines()] if path.exists() else []
     proposals=[json.loads(f.read_text()) for f in sorted((root/'stages/source/journal/proposals').glob('[0-9]*.json'))]
@@ -201,6 +216,16 @@ def audit(study,output,replay_root):
         if physical.index!=20 or proposals.index!=5:raise ValueError('Source replay budget mismatch')
         if json.loads((source/'costs.json').read_text())!=json.loads((replay_dir/'costs.json').read_text()):
             raise ValueError('Source cost/budget replay mismatch')
+        preparation=[]
+        def check_pair_prep(stage,a,b):
+            control=compare_preparation(completed[a.episode_id]/'control_trace.jsonl',completed[b.episode_id]/'control_trace.jsonl',actions=True)
+            physics=compare_preparation(completed[a.episode_id]/'physics_trace.jsonl',completed[b.episode_id]/'physics_trace.jsonl',actions=False)
+            preparation.append(dict(stage=stage,condition_id=a.condition_id,before_episode=a.episode_id,after_episode=b.episode_id,control=control,physics=physics))
+        exploration=stage_results['source'][:12]
+        for baseline in exploration[:2]:
+            for current in exploration[2:]:
+                if current.condition_id==baseline.condition_id:check_pair_prep('exploration',baseline,current)
+        for a,b in zip(stage_results['source'][12:16],stage_results['source'][16:20]):check_pair_prep('validation',a,b)
         paired_summary={};null_repeats=[]
         for name,split,phase in [('source_audit','source_audit','source_audit'),('target_zero','target_test','evaluation')]:
             results=stage_results[name];rows=json.loads((stage_paths[name]/'paired_results.json').read_text());summary=json.loads((stage_paths[name]/'summary.json').read_text())
@@ -211,6 +236,7 @@ def audit(study,output,replay_root):
                     a.phase!=phase or b.phase!=phase or a.skill_hash!=before.semantic_hash or b.skill_hash!=after.semantic_hash or
                     rows[index]!=dict(condition_id=c['condition_id'],stratum=c['name'],before=a.model_dump(mode='json'),after=b.model_dump(mode='json'))):
                     raise ValueError('Before/after split, artifact or ordering mismatch')
+                check_pair_prep(name,a,b)
                 if before.semantic_hash==after.semantic_hash:
                     null_repeats.append(dict(stage=name,condition_id=c['condition_id'],
                         control=compare_traces(completed[a.episode_id]/'control_trace.jsonl',completed[b.episode_id]/'control_trace.jsonl',actions=True),
@@ -236,7 +262,8 @@ def audit(study,output,replay_root):
         model=audit_model_calls(root,package,source)
         packages.append(dict(package=package,source_selection=json.loads((source/'selection.json').read_text()),
             before_skill=before.model_dump(),after_skill=after.model_dump(),artifact_freeze=expected_freeze,source_reconstruction_passed=True,
-            source_budget=json.loads((source/'costs.json').read_text()),paired=paired_summary,null_repeats=null_repeats,model_calls=model))
+            source_budget=json.loads((source/'costs.json').read_text()),paired=paired_summary,null_repeats=null_repeats,model_calls=model,
+            preparation_checks=preparation,all_preparation_states_and_actions_exact=all(c['control']['exactly_equal'] and c['physics']['exactly_equal'] for c in preparation)))
     if costs!=report['costs'] or costs['known_complete_physical_calls']!=72:raise ValueError('Whole-study physical cost mismatch')
     result=dict(status='GEOMETRY_LEARNING_TRACE_AUDIT_PASSED',formal_result_eligible=False,plan_hash=p['plan_hash'],
         private_manifest_canonical_sha256=p['manifest_sha256'],packages=packages,cases=cases,costs=costs,
@@ -244,6 +271,8 @@ def audit(study,output,replay_root):
         score_recomputation_count=3*len(cases),rate_disagreements=sum(c['outcomes']['candidate_50hz']['task_success']!=c['outcomes']['candidate_200hz']['task_success'] for c in cases),
         auditor_sha256=file_digest(__file__),limitations=[p['interpretation'],p['environment_scope'],
             'One direction, two learners and one source-learning seed; no population significance or method superiority inference.',
+            'No no-feedback proposal control in this batch; model-prior/search and feedback contributions are not separately isolated.',
+            'Full-horizon diagnostic observation costs are charged even after first success; completion-time improvements do not imply measured simulation-cost savings.',
             'Offline reuse of judges and learner code checks retained-record consistency; not an independent physical oracle.',
             'Source and target exact conditions withheld from learner, not an adversarial filesystem sandbox.',
             'New task explicitly uses experimental candidate 50 Hz score; old default and old results remain unchanged.'])

@@ -63,3 +63,17 @@ def test_public_export_rejects_nested_exact_conditions_but_allows_scalar_results
     check_public(dict(cases=[dict(condition_id='id',task_success=False,max_lift_m=0.)]))
     with pytest.raises(ValueError,match='private condition'):
         check_public(dict(projection=[dict(condition_id='id',reset_seed=123,size_m=[.035,.035,.14])]))
+
+
+def test_pair_preparation_ignores_identity_and_later_skill_effects_but_detects_initial_state_drift(monkeypatch,tmp_path):
+    import json
+    root=Path(__file__).resolve().parents[1];monkeypatch.syspath_prepend(str(root/'tools'))
+    from audit_geometry_learning_v1 import compare_preparation
+    a=tmp_path/'before';b=tmp_path/'after'
+    def rows(identity,end_value,start_value=1.):
+        return [dict(observation=dict(episode_id=identity,sim_time_s=t,position=start_value if t<=.5 else end_value),native_action=[0.] if t<.5 else [end_value]) for t in [0.,.02,.5,.52]]
+    a.write_text(''.join(json.dumps(r)+'\n' for r in rows('a',1.)))
+    b.write_text(''.join(json.dumps(r)+'\n' for r in rows('b',2.)))
+    assert compare_preparation(a,b,actions=True)['exactly_equal']
+    b.write_text(''.join(json.dumps(r)+'\n' for r in rows('b',2.,start_value=1.001)))
+    assert not compare_preparation(a,b,actions=True)['exactly_equal']
